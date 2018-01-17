@@ -1,8 +1,8 @@
 # Harissa
 
-###### Tools for mechanistic-based gene network inference
+### Tools for mechanistic-based gene network inference
 
-*Hartree Approximation and Random fields for mechanistic-based gene network Inference along with a Stochastic Simulation Algorithm*
+###### **H**artree **A**pproximation and **R**andom fields for mechanistic-based gene network **I**nference along with a **S**tochastic **S**imulation **A**lgorithm
 
 You can install it with pip:
     

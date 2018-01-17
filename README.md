@@ -2,7 +2,7 @@
 
 ### Tools for mechanistic-based gene network inference
 
-###### **H**artree **A**pproximation and **R**andom fields for mechanistic-based gene network **I**nference along with a **S**tochastic **S**imulation **A**lgorithm
+**H**artree **A**pproximation and **R**andom fields for mechanistic-based gene network **I**nference along with a **S**tochastic **S**imulation **A**lgorithm
 
 You can install it with pip:
     

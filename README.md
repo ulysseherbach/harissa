@@ -2,7 +2,7 @@
 
 ### Tools for mechanistic-based gene network inference
 
-Consists in:
+This Python package consists in:
 - **H**artree **A**pproximation and **R**andom fields
 - for mechanistic-based gene network **I**nference
 - along with a **S**tochastic **S**imulation **A**lgorithm

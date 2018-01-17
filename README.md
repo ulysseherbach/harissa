@@ -1,7 +1,7 @@
-Harissa - Tools for mechanistic-based gene network inference
-============================================================
+# Harissa
 
-Basically, this stands for:
+Tools for mechanistic-based gene network inference
+
 Hartree Approximation and Random fields for
 mechanistic-based gene network Inference
 along with a Stochastic Simulation Algorithm.

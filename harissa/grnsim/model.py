@@ -1,7 +1,7 @@
 """Classes to handle the stochastic gene network model"""
 
 import numpy as np
-import grnsim.core as core
+from . import core
 
 
 class GeneNetwork:

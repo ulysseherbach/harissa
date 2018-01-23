@@ -27,7 +27,7 @@ def traceProm(T,E,ax,y,h,couleur):
     for x0, x1 in zip(start,end):
         ax.axvspan(x0, x1, ymin=y - h/2, ymax=y + h/2, color=couleur)
 
-def plotsim(timepoints, expression, save_path):
+def plotsim(timepoints, expression, fname=None):
     """Plot the expression path of a gene network"""
     G = np.size(expression[0])
     model = 'full' if (len(expression[0].dtype) == 3) else 'bursty'
@@ -43,7 +43,6 @@ def plotsim(timepoints, expression, save_path):
         ax0.set_title('Promoter active periods')
         ax1.set_title('mRNA')
         ax2.set_title('Proteins')
-
         for i in range(G):
             ### Plot promoters
             traceProm(timepoints, expression['E'][:,i],
@@ -55,7 +54,6 @@ def plotsim(timepoints, expression, save_path):
             ax2.plot(timepoints, expression['P'][:,i],
                 linewidth=1.5, label='Gene {}'.format(i+1))
             ax2.legend(loc='upper left')
-
     elif (model == 'bursty'):
         fig = plt.figure(figsize=(12,6), dpi=100)
         gs = gridspec.GridSpec(2,1)
@@ -65,7 +63,6 @@ def plotsim(timepoints, expression, save_path):
         ax2 = fig.add_subplot(gs[1])
         ax1.set_title('mRNA')
         ax2.set_title('Proteins')
-
         for i in range(G):
             ### Plot mRNA
             ax1.plot(timepoints, expression['M'][:,i],
@@ -74,27 +71,29 @@ def plotsim(timepoints, expression, save_path):
             ax2.plot(timepoints, expression['P'][:,i],
                 linewidth=1.5, label='Gene {}'.format(i+1))
             ax2.legend(loc='upper left')
-
     ### Save figure
-    fig.savefig(save_path, dpi=100, bbox_inches='tight', frameon=False)
-    plt.close()
+    if fname is not None:
+        fig.savefig(fname, dpi=100, bbox_inches='tight', frameon=False)
+        plt.close()
 
-def histo(M, P, fname):
+def histo(M, P, fname=None):
     """Display the marginal distributions"""
     G = np.size(M[0,:])
     fig = plt.figure(figsize=(10,int(2*G)), dpi=100)
     gs = gridspec.GridSpec(G, 2, hspace=0.5)
     Mmax, Pmax = np.max(M), np.max(P)
+    cmap = plt.get_cmap("tab10") # Get the default color cycle
     for i in range(G):
         ax0 = fig.add_subplot(gs[i,0]) # mRNAs
         ax1 = fig.add_subplot(gs[i,1]) # Proteins
-        ax0.hist(M[:,i], bins=30, range=(0,Mmax), facecolor=orange)
+        ax0.hist(M[:,i], bins=30, range=(0,Mmax), facecolor=cmap(i))
         ax0.set_xlim(0, Mmax)
-        ax1.hist(P[:,i], bins=30, range=(0,Pmax), facecolor=bleu)
+        ax1.hist(P[:,i], bins=30, range=(0,Pmax), facecolor=cmap(i))
         ax1.set_xlim(0, Pmax)
-        ax0.set_title(r'$\mathregular{M_{'+str(i)+r'}}$')
-        ax1.set_title(r'$\mathregular{P_{'+str(i)+r'}}$')
-    fig.savefig(fname, dpi=100, bbox_inches = "tight", frameon = False)
-    plt.close()
-
+        ax0.set_title(r'$\mathregular{M_{'+str(i+1)+r'}}$')
+        ax1.set_title(r'$\mathregular{P_{'+str(i+1)+r'}}$')
+    ### Save figure
+    if fname is not None:
+        fig.savefig(fname, dpi=100, bbox_inches='tight', frameon=False)
+        plt.close()
 

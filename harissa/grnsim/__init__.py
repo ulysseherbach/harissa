@@ -16,11 +16,9 @@ __all__ = ['load', 'plotsim', 'histo']
 __version__ = '0.1'
 __author__ = 'Ulysse Herbach'
 
-### Export the model class
-from grnsim.model import load
-
-### Export the plot function
-from grnsim.graphics import plotsim, histo
+### Put these in the grnsim namespace
+from .model import load
+from .graphics import plotsim, histo
 
 ### Optionally set the seed for reproducible output
 # import numpy as np

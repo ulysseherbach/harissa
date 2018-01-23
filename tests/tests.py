@@ -1,12 +1,15 @@
 ### tests.py - Some example simulations ###
-import sys
-sys.path.append("../harissa")
 
+### Make the harissa package available to this script
+import sys
+sys.path.append("../")
+
+### Import the relevant packages
 import numpy as np 
-import grnsim as ns
+import harissa.grnsim as ns
 
 ### Load a 3-gene network example
-from networks import net0
+from harissa.networks import net0
 network = ns.load(net0)
 
 ### Set the interactions

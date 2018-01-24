@@ -57,6 +57,11 @@ class GeneNetwork:
         NB: This is an arbitrary default constant value."""
         return 10*np.sum(self.param['D0'])
 
+    # def inter(self, i, j):
+    #     """High-level method to access the link i -> j.
+    #     By default this returns None."""
+    #     return None
+
     def simulate(self, timepoints, method='exact', info=False):
         """Simulation of the network
 
@@ -166,6 +171,12 @@ class AutoActiv(GeneNetwork):
         NB: Form of the AutoActiv class.
         In this model, koff does not depend on P."""
         return self.B
+
+    # def inter(self, i, j):
+    #     """High-level method to access the link i -> j."""
+    #     if (min(i,j) >= 1 and max(i,j) <= self.size):
+    #         return self.theta[j-1,i-1]
+    #     else: return None
 
 
 ### Utility function to define models

@@ -1,8 +1,8 @@
 ### Harissa demo 1 - Simulating networks ###
 
-### Make the harissa package available to this script
-import sys
-sys.path.append("../")
+### Uncomment for testing before "proper" install
+# import sys
+# sys.path.append("../")
 
 ### Import the relevant packages
 import numpy as np 

@@ -1,2 +1,3 @@
 
-tests/.ipynb_checkpoints/test0-checkpoint.ipynb
+*.pyc
+*.ipynb

@@ -1,4 +1,4 @@
-### tests.py - Some example simulations ###
+### Harissa demo 1 - Simulating networks ###
 
 ### Make the harissa package available to this script
 import sys

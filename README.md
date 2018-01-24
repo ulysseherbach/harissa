@@ -13,12 +13,10 @@ It consists in:
 
 #### Basic info
 
-The package is based on Python 3 and uses the following standard scientific libraries:
+The package depends on the following standard scientific libraries:
 - numpy
 - scipy
 - matplotlib
-
-It was tested with numpy 1.13.3, scipy 1.0.0 and matplotlib 2.1.1, but should work with any recent version.
 
 Also, you can install it with pip:
     

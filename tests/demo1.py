@@ -5,7 +5,7 @@
 # sys.path.append("../")
 
 ### Import the relevant packages
-import numpy as np 
+import numpy as np
 import harissa.grnsim as ns
 
 ### Load a 3-gene network example
@@ -46,4 +46,5 @@ ns.histo(simu['M'], simu['P'], 'histoPDMPbursty.pdf')
 simu = network.simulate(time, method='ode')
 ns.plotsim(time,simu,'pathODE.pdf')
 ns.histo(simu['M'], simu['P'], 'histoODE.pdf')
+
 

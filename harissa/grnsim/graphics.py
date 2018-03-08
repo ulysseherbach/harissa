@@ -31,6 +31,7 @@ def plotsim(timepoints, expression, fname=None):
     """Plot the expression path of a gene network"""
     G = np.size(expression[0])
     model = 'full' if (len(expression[0].dtype) == 3) else 'bursty'
+    cmap = plt.get_cmap("tab10") # Get the default color cycle
     if (model == 'full'):
         fig = plt.figure(figsize=(12,6), dpi=100)
         gs = gridspec.GridSpec(3,1,height_ratios=[0.5,1,1])
@@ -46,13 +47,13 @@ def plotsim(timepoints, expression, fname=None):
         for i in range(G):
             ### Plot promoters
             traceProm(timepoints, expression['E'][:,i],
-                ax0, (G-1-i+0.5)/G, 0.9/G, 'C{}'.format(i))
+                ax0, (G-1-i+0.5)/G, 0.9/G, cmap(i))
             ### Plot mRNA
             ax1.plot(timepoints, expression['M'][:,i],
-                linewidth=1.5, label='Gene {}'.format(i+1))
+                linewidth=1.5, label='Gene {}'.format(i+1), color=cmap(i))
             ### Plot proteins
             ax2.plot(timepoints, expression['P'][:,i],
-                linewidth=1.5, label='Gene {}'.format(i+1))
+                linewidth=1.5, label='Gene {}'.format(i+1), color=cmap(i))
             ax2.legend(loc='upper left')
     elif (model == 'bursty'):
         fig = plt.figure(figsize=(12,6), dpi=100)

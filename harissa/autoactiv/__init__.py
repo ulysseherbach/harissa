@@ -210,7 +210,7 @@ def posterior(dataset,*lgenes,**kwargs):
         theta = np.zeros(T)
 
         for i, c in enumerate(Vc):
-            # print("c = {}".format(c))
+            print("c = {}".format(c))
             ### Inference
             (a,theta) = core.inferParamEM(X,Timepoints,a,theta,c,**kwargs)
             Va[i,:] = a

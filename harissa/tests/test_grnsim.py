@@ -1,10 +1,6 @@
-### Harissa demo 1 - Simulating networks ###
-
-### Uncomment for testing before "proper" install
-# import sys
-# sys.path.append("../")
-
-### Import the relevant packages
+### Tests of the grnsim package ###
+import sys
+sys.path.append("../../")
 import numpy as np
 import harissa.grnsim as ns
 

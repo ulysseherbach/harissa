@@ -4,9 +4,10 @@
 
 This is a Python package for inferring gene networks from single-cell data.
 It consists in:
-- **H**artree **A**pproximation and **R**andom fields
-- for mechanistic-based gene network **I**nference
-- along with a **S**tochastic **S**imulation **A**lgorithm
+
+* Hartree Approximation and Random fields
+* for mechanistic-based gene network Inference
+* along with a Stochastic Simulation Algorithm
 
 **NB:** This repository is still under construction... but will be ready soon
 
@@ -19,5 +20,5 @@ The package depends on the following standard scientific libraries:
 - matplotlib
 
 Also, you can install it with pip:
-    
-    pip install harissa
+
+	pip install harissa

@@ -1,6 +1,12 @@
+# OS junk files
+*.DS_Store
+
+# Other files
 *.pyc
 *.ipynb
 *.pdf
 *.html
 *.rtf
-tests/tests.py
+
+# Working files
+main.py

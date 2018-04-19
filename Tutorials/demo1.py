@@ -1,11 +1,11 @@
-### Harissa demo 1 - Simulating networks ###
+### Simulating networks ###
 import sys
 sys.path.append("../")
 import numpy as np
 import harissa.grnsim as ns
 
 ### Load a 3-gene network example
-from harissa.networks import net0
+import net0
 network = ns.load(net0)
 
 ### Set the interactions
@@ -42,5 +42,3 @@ ns.histo(simu['M'], simu['P'], 'histoPDMPbursty.pdf')
 simu = network.simulate(time, method='ode')
 ns.plotsim(time,simu,'pathODE.pdf')
 ns.histo(simu['M'], simu['P'], 'histoODE.pdf')
-
-

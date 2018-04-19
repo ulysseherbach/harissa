@@ -6,12 +6,10 @@ Tools for mechanistic-based gene network inference
 
 Current subpackages
 -------------------
+autoactiv : auto-activation inference
 grnsim : simulation of the network model
-networks : some templates of networks
 
 """
-
-__all__ = []
-__version__ = '0.1.1'
+__version__ = '0.1.3'
 __author__ = 'Ulysse Herbach'
-
+__all__ = []

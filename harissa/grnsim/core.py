@@ -161,6 +161,3 @@ def sim_ode(model, timepoints):
     ### Restore the initial state of the input
     model.state = init_state
     return np.array(sim)
-
-
-

@@ -1,11 +1,9 @@
-### graphics.py - Monitoring and visualization of the results ###
-
+"""Monitoring and visualization of the results"""
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as ticker
-
-from autoactiv.utils import estimRep, funRep
+from .utils import estimRep, funRep
 
 ### Define colors
 bleu = "#0048EC"
@@ -26,8 +24,8 @@ def prepFigure(ax):
     ax.set_yticklabels([])
 
 def plotHistoGenes(Data, image_path, *lgenes, **models):
-    """Plot the histogram of each gene"""
-    nbins = 20 # Nombre de bins
+    """Plot the histogram of each gene."""
+    nbins = 20 # Number of bins
     genedict = Data.getGenes(*lgenes)
     Timepoints = Data.getTimepoints()
     T = len(Timepoints) # Number of time-points
@@ -40,7 +38,6 @@ def plotHistoGenes(Data, image_path, *lgenes, **models):
         fig = plt.figure(figsize=(10,T*10/6), dpi=100)
         gs = gridspec.GridSpec(T,3)
         gs.update(hspace = 0.5)
-
         for t, timepoint in enumerate(Timepoints):
             ### Selection of the data for time t
             Xt = X[D['timepoint']==timepoint]
@@ -61,7 +58,6 @@ def plotHistoGenes(Data, image_path, *lgenes, **models):
                 if (t == 0):
                     m = models[gene].a[1] # Get the Hill power value
                     ax.legend([r'$\mathregular{m=}$'+'{:.1f}'.format(m)],loc='upper right')
-
             ### Plot the transformed data mRNA**alpha
             ax = fig.add_subplot(gs[t,1])
             if (t == 0): ax.set_title(gene+r"$\mathregular{{^{{{:.1f}}}}}$".format(alpha))
@@ -74,7 +70,6 @@ def plotHistoGenes(Data, image_path, *lgenes, **models):
                 x = np.linspace(0.001,xmax**alpha,200)
                 y = (1/alpha)*(x**(1/alpha - 1))*(models[gene].getDistribution(x**(1/alpha),timepoint))
                 ax.plot(x,y, linewidth=1.5, color=rouge, label="Model")
-
             ### Plot the repartition functions of mRNA**alpha
             ax = fig.add_subplot(gs[t,2])
             if (t == 0): ax.set_title("Rep. "+gene+r"$\mathregular{{^{{{:.1f}}}}}$".format(alpha))
@@ -88,7 +83,6 @@ def plotHistoGenes(Data, image_path, *lgenes, **models):
                 y = (1/alpha)*(x**(1/alpha - 1))*(models[gene].getDistribution(x**(1/alpha),timepoint))
                 y = funRep(x,y)
                 ax.plot(x,y/y[-1], linewidth=1.5, color=rouge, label="Model")
-            
         path = image_path + "/Histo_{}.pdf".format(idgene)
         fig.savefig(path, dpi=100, bbox_inches = "tight", frameon = False)
         plt.close()
@@ -98,21 +92,21 @@ def plotInference(Va,Vtheta,Vl,c,gene,pathimage):
     fig = plt.figure(figsize=(8,10), dpi=100)
     gs = gridspec.GridSpec(4,1, hspace=0.5)
     x = np.array(range(0,np.size(Va[:,0])))
-
+    ### Define the figure
     ax = fig.add_subplot(gs[0])
     ax.plot(x, Vl, linewidth = 1.5, color=rouge, label="logL")
     ax.legend(loc='lower right')
     ax.set_title(gene)
-
+    ### Evolution of k0 and k1
     ax = fig.add_subplot(gs[1])
     ax.plot(x, Va[:,0], linewidth = 1.5, color=orange, label=r'$\mathregular{k_0}$')
     ax.plot(x, c*Va[:,1]+Va[:,0], linewidth = 1.5, color=bleu, label=r'$\mathregular{k_1}$')
     ax.legend(ncol=2)
-
+    ### Evolution of koff
     ax = fig.add_subplot(gs[2])
     ax.plot(x, Va[:,2], linewidth = 1.5, color=vert, label=r'$\mathregular{k_{off}/s}$')
     ax.legend()
-
+    ### Evolution of theta
     ax = fig.add_subplot(gs[3])
     for t in range(0,np.size(Vtheta[0,:])):
         # labtheta = r'$\mathregular{{\theta^{{({:.0f})}}}}$'.format(Timepoints[t])
@@ -122,7 +116,7 @@ def plotInference(Va,Vtheta,Vl,c,gene,pathimage):
     plt.close()
 
 def plotPosterior(dataset, posterior, image_path, *lgenes):
-    """Plot the results of the inference, i.e. the posterior p(c|data)"""
+    """Plot the results of the inference, i.e. the posterior p(c|data)."""
     genedict = dataset.getGenes(*lgenes)
     for idgene, gene in genedict.items():
         print("Plotting posterior for gene {} ({})...".format(idgene,gene))
@@ -130,29 +124,29 @@ def plotPosterior(dataset, posterior, image_path, *lgenes):
         Vc = P['c']
         Vp = P['p']
         Vm = P['a'][:,1]
-
+        ### Define the figure
         fig = plt.figure(figsize=(8,6), dpi=100)
         gs = gridspec.GridSpec(2,1)
         # gs.update(hspace = 0.5)
-
+        ### Pseudo-posterior of c
         ax = fig.add_subplot(gs[0])
         ax.plot(Vc, Vp, linewidth = 1.5, marker='o', color="orange", label=r'$\mathregular{p(c\mid x)}$')
         ax.set_xticks(Vc)
         # ax.set_ylim(0,1.05*np.max(Vp))
         ax.set_title(gene)
         ax.legend()
-
+        ### Pseudo-posterior of m
         ax = fig.add_subplot(gs[1])
         ax.plot(Vm, Vp, linewidth = 1.5, marker='o', color="red", label=r'$\mathregular{p(m\mid x)}$')
         # ax.set_ylim(0,1.05*np.max(Vp))
         ax.legend()
-
+        ### Export the plot
         path = image_path + "/Posterior_{}.pdf".format(idgene)
         fig.savefig(path, dpi=100, bbox_inches = "tight", frameon = False)
         plt.close()
 
 def plotHistoHill(file,modeldict,nbins=None):
-    """Plot the histogram of Hill powers from an inference output"""
+    """Plot the histogram of Hill powers from an inference output."""
     m = [model.a[1] for gene, model in modeldict.items()]
     fig = plt.figure(figsize=(6,4), dpi=100)
     gs = gridspec.GridSpec(1,1)
@@ -161,7 +155,3 @@ def plotHistoHill(file,modeldict,nbins=None):
     ax1.legend()
     fig.savefig(file, dpi=100, bbox_inches = "tight", frameon = False)
     plt.close()
-
-
-
-

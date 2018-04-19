@@ -201,10 +201,3 @@ def load(obj):
             return network
     else:
         print('Error while loading network.')
-
-
-
-
-
-
-

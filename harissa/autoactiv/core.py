@@ -97,16 +97,17 @@ def Maximization(X,Timepoints,a,theta,c,Y):
     b = [(1e-5,None),(1e-5,None),(1e-5,None)] + [(None,None) for i in Timepoints]
     res = scipy.optimize.minimize(f, x0, method='L-BFGS-B', jac=Df, bounds=b)
     if not res.success:
-        print("Warning, Maximization step failed")
+        print('Warning, Maximization step failed')
     # else: print("M step done in {} iterations, a = {}".format(res.nit, res.x[0:3]))
     return (res.x[0:3],res.x[3:])
 
 ### The EM routine
 def inferParamEM(X,Timepoints,a,theta,c,**kwargs):
     monitor_path = kwargs.get('monitor_path', None)
-    iter_em = kwargs.get('iter_em', 100) # Number of iterations of the EM
+    iter_em = kwargs.get('iter_em', 100)
     idgene = kwargs.get('idgene', 0)
     gene = kwargs.get('gene', '[?]')
+    tol = kwargs.get('tol', 1e-5)
     ### Initialization
     T = len(Timepoints)
     Va = np.zeros((iter_em+1,3))
@@ -116,25 +117,28 @@ def inferParamEM(X,Timepoints,a,theta,c,**kwargs):
     Va[0,:] = a
     Vtheta[0,:] = theta
     Vl[0] = l
-    i, lt = 1, l-1
-    while ((i < iter_em+1) and (l - lt > 1e-5)):
-        # print('i = {}'.format(i))
+    i, lt = 0, l-1
+    while ((i < iter_em) and (l - lt > tol)):
+        print('EM step {}...'.format(i))
+        i += 1
         Y = Expectation(X,Timepoints,a,theta,c)
         (a,theta) = Maximization(X,Timepoints,a,theta,c,Y)
         lt = l
         l = logLikelihood(X,Timepoints,a,theta,c)
+        # print(l - lt)
         ### Saving the values if needed
         if monitor_path:
             Va[i,:] = a
             Vtheta[i,:] = theta
             Vl[i] = l
-        i += 1
-    if (i < iter_em+1):
+    ### Check the results
+    if (i < iter_em):
         for k in range(i,iter_em+1):
             Va[k,:] = a
             # Vtheta[k,:] = theta
             Vl[k] = l
-    else: print("Warning (c = {}): EM has not converged in {} iterations".format(c,iter_em))
+        print('EM converged in {} iterations (c = {})'.format(i, c))
+    else: print('Warning (c = {}): EM has not converged in {} iterations'.format(c,iter_em))
     ### Optional graphical monitoring
     if monitor_path:
         pathimage = monitor_path + "/Monitoring_{}_{}".format(idgene,c)

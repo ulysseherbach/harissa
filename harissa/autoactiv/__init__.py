@@ -4,12 +4,12 @@ Autoactiv package
 
 Detection of positive loops in gene networks from single-cell data
 """
-__version__ = '0.2'
+__version__ = '0.3'
 __author__ = 'Ulysse Herbach'
 __all__ = []
 
-from .interface import posterior, mapestim, infer
-__all__ += ['posterior', 'mapestim', 'infer']
+from .interface import posterior, infer, mapestim, get_param
+__all__ += ['posterior', 'infer', 'mapestim', 'get_param']
 
 from .scdata import scdata
 __all__ += ['scdata']

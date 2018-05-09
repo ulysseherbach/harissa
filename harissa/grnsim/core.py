@@ -28,7 +28,7 @@ def step_exact_full(model):
     model.state['M'], model.state['P'] = M, P
     ### 2. Update the promoters
     a, b = model.kon(P)/tau, model.koff(P)/tau
-    G, E = model.size, model.state['E']
+    G, E = np.size(model.param['D0']), model.state['E']
     v = np.zeros(G+1) # Probabilities for possible transitions
     v[1:] = a*(1-E) + b*E # i = 0, ..., n-1 : switch promoter i
     v[0] = 1 - np.sum(v[1:]) # i = -1 : no change (phantom jump)
@@ -41,7 +41,7 @@ def step_exact_full(model):
 def sim_exact_full(model, timepoints, info=False):
     """Exact simulation of the network in the two-state model case."""
     init_state = model.state.copy() # Save the current state
-    G = model.size
+    G = np.size(model.param['D0'])
     sim = []
     types = [('E','uint8'), ('M','float64'), ('P','float64')]
     c0, c1 = 0, 0 # Jump counts (phantom and true)
@@ -89,7 +89,7 @@ def step_exact_bursty(model):
     M, P = flow_bursty(U, model.state, model.param)
     model.state['M'], model.state['P'] = M, P
     ### 2. Update the promoters
-    G = model.size
+    G = np.size(model.param['D0'])
     v = np.zeros(G+1) # Probabilities for possible transitions
     v[1:] = model.kon(P)/tau # i = 0, ..., n-1 : burst of mRNA i
     v[0] = 1 - np.sum(v[1:]) # i = -1 : no change (phantom jump)
@@ -104,7 +104,7 @@ def step_exact_bursty(model):
 def sim_exact_bursty(model, timepoints, info=False):
     """Exact simulation of the network in the bursty model case."""
     init_state = model.state.copy() # Save the current state
-    G = model.size
+    G = np.size(model.param['D0'])
     sim = []
     types = [('M','float64'), ('P','float64')]
     c0, c1 = 0, 0 # Jump counts (phantom and true)
@@ -146,7 +146,7 @@ def sim_ode(model, timepoints):
     1. ODE system involving proteins only
     2. Mean level of mRNA given protein levels"""
     init_state = model.state.copy() # Save the current state
-    G = model.size
+    G = np.size(model.param['D0'])
     dt = model.euler_step
     T = 0
     sim = []

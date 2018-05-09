@@ -2,15 +2,8 @@
 Simulation of Gene Regulatory Networks
 
 Networks are modelled by piecewise-deterministic Markov processes (PDMP)
-
-Two simulation options:
-- exact (thinning method)
-
-TODO:
-- put the thinning constant and the euler step outside the model class
-- implement a check on these constants before simulation
 """
-__version__ = '0.2'
+__version__ = '0.3'
 __author__ = 'Ulysse Herbach'
 __all__ = []
 

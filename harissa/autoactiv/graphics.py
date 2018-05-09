@@ -26,8 +26,8 @@ def prepFigure(ax):
 def plotHistoGenes(Data, image_path, *lgenes, **models):
     """Plot the histogram of each gene."""
     nbins = 20 # Number of bins
-    genedict = Data.getGenes(*lgenes)
-    Timepoints = Data.getTimepoints()
+    genedict = Data.genes(*lgenes)
+    Timepoints = Data.timepoints()
     T = len(Timepoints) # Number of time-points
     D = Data.array # Retrieve the structured array
     for idgene, gene in genedict.items():
@@ -117,7 +117,7 @@ def plotInference(Va,Vtheta,Vl,c,gene,pathimage):
 
 def plotPosterior(dataset, posterior, image_path, *lgenes):
     """Plot the results of the inference, i.e. the posterior p(c|data)."""
-    genedict = dataset.getGenes(*lgenes)
+    genedict = dataset.genes(*lgenes)
     for idgene, gene in genedict.items():
         print("Plotting posterior for gene {} ({})...".format(idgene,gene))
         P = posterior[posterior['idgene'] == idgene]
@@ -132,13 +132,13 @@ def plotPosterior(dataset, posterior, image_path, *lgenes):
         ax = fig.add_subplot(gs[0])
         ax.plot(Vc, Vp, linewidth = 1.5, marker='o', color="orange", label=r'$\mathregular{p(c\mid x)}$')
         ax.set_xticks(Vc)
-        # ax.set_ylim(0,1.05*np.max(Vp))
+        ax.set_ylim(0,1.05*np.max(Vp))
         ax.set_title(gene)
         ax.legend()
         ### Pseudo-posterior of m
         ax = fig.add_subplot(gs[1])
         ax.plot(Vm, Vp, linewidth = 1.5, marker='o', color="red", label=r'$\mathregular{p(m\mid x)}$')
-        # ax.set_ylim(0,1.05*np.max(Vp))
+        ax.set_ylim(0,1.05*np.max(Vp))
         ax.legend()
         ### Export the plot
         path = image_path + "/Posterior_{}.pdf".format(idgene)

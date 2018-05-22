@@ -27,8 +27,11 @@ def traceProm(T,E,ax,y,h,couleur):
     for x0, x1 in zip(start,end):
         ax.axvspan(x0, x1, ymin=y - h/2, ymax=y + h/2, color=couleur)
 
-def plotsim(timepoints, expression, fname=None):
+def plotsim(timepoints, expression, fname=False, **kwargs):
     """Plot the expression path of a gene network"""
+    # fname = kwargs.get('fname', None)
+    q0M, q1M = kwargs.get('q0M', None), kwargs.get('q1M', None)
+    q0P, q1P = kwargs.get('q0P', None), kwargs.get('q1P', None)
     G = np.size(expression[0])
     model = 'full' if (len(expression[0].dtype) == 3) else 'bursty'
     cmap = plt.get_cmap("tab10") # Get the default color cycle
@@ -65,12 +68,22 @@ def plotsim(timepoints, expression, fname=None):
         ax1.set_title('mRNA')
         ax2.set_title('Proteins')
         for i in range(G):
-            ### Plot mRNA
-            ax1.plot(timepoints, expression['M'][:,i],
-                linewidth=1.5, label='Gene {}'.format(i+1))
+            ### mRNA quantiles
+            if q0M is not None:
+                ax1.plot(timepoints, q0M[:,i], c=cmap(i), alpha=0.25, lw=1.5)
+            if q1M is not None:
+                ax1.plot(timepoints, q1M[:,i], c=cmap(i), alpha=0.25, lw=1.5)
+            ### plot mRNA
+            ax1.plot(timepoints, expression['M'][:,i], c=cmap(i), lw=1.5,
+                label='Gene {}'.format(i+1))
+            ### Protein quantiles
+            if q0P is not None:
+                ax2.plot(timepoints, q0P[:,i], c=cmap(i), alpha=0.25, lw=1.5)
+            if q1P is not None:
+                ax2.plot(timepoints, q1P[:,i], c=cmap(i), alpha=0.25, lw=1.5)
             ### Plot proteins
-            ax2.plot(timepoints, expression['P'][:,i],
-                linewidth=1.5, label='Gene {}'.format(i+1))
+            ax2.plot(timepoints, expression['P'][:,i], c=cmap(i), lw=1.5,
+                label='Gene {}'.format(i+1))
             ax2.legend(loc='upper left')
     ### Save figure
     if fname is not None:

@@ -2,6 +2,7 @@
 import numpy as np
 from . import core
 from .utils import theta_base
+from .default import s0, d0, s1, d1, k0, k1, b, m, s
 
 ### General network form
 class GeneNetworkFull:
@@ -67,6 +68,9 @@ class GeneNetworkFull:
             return core.sim_ode(self, timepoints)
         else: raise ValueError('method must be either "exact" or "ode"')
 
+    def size(self):
+        return np.size(self.param['D0'])
+
 
 class GeneNetworkBursty:
     """
@@ -129,6 +133,9 @@ class GeneNetworkBursty:
         elif (method == 'ode'):
             return core.sim_ode(self, timepoints)
 
+    def size(self):
+        return np.size(self.param['D0'])
+
 
 ### A possible network model with a particular interaction form
 class AutoActivFull(GeneNetworkFull):
@@ -161,28 +168,31 @@ class AutoActivFull(GeneNetworkFull):
 
     S : square matrix/array of positive floats
         Values for the Hill threshold coefficients
+    
+    basal : dictionary {i: float}
+        For i = 1,...,size, basal[i] represents basal activity of gene i.
+        This may aggregate self-interaction and unobserved external input.
 
-    inter : square matrix/array of floats
-        - if i != j, inter[i,j] is the strength of interaction i -> j
-        - if i == j this is rather a modification of basal promoter activity.
+    inter : dictionary {(i,j): float} with i,j = 1,...,size
+        For i != j, inter[i,j] is the strength of interaction i -> j.
     """
     def __init__(self, size):
         ### Define default global parameters
         G = size
-        S0, D0 = 1*np.ones(G), 1*np.ones(G)
-        S1, D1 = 0.2*np.ones(G), 0.2*np.ones(G)
+        S0, D0 = s0*np.ones(G), d0*np.ones(G)
+        S1, D1 = s1*np.ones(G), d1*np.ones(G)
         ### Model-specific basal parameters
-        K0, K1, B = 0.2*D0, 2.2*D0, 5*D0
-        M, S = 2*np.ones((G,G)), 0.1*np.ones((G,G))
+        K0, K1, B = k0*np.ones(G), k1*np.ones(G), b*np.ones(G)
+        M, S = m*np.ones((G,G)), s*np.ones((G,G))
         self.K0, self.K1, self.B, self.M, self.S = K0, K1, B, M, S
-        ### Interactions
-        self.inter = {}
+        ### Basal activity and interactions
+        self.basal, self.inter = {}, {}
         ### State of the system
         types = [('E','uint'), ('M','float'), ('P','float')]
         state = np.array([(0,0,0) for i in range(G)], dtype=types)
         ### Simulation parameters
-        thin = np.sum(self.B) # Only correct if B > K1
-        euler = 0.1/np.max(self.B)
+        thin = np.sum(B) # Only correct if B > K1
+        euler = 0.1/np.max(B)
         ### Finally set the global GeneNetworkFull default attributes
         types = [('S0','float'), ('D0','float'),
                  ('S1','float'), ('D1','float')]
@@ -191,7 +201,7 @@ class AutoActivFull(GeneNetworkFull):
 
     def get_theta_base(self):
         """Get the basal theta of the model. This is the diagonal value
-        for which genes are independent and somewhat well balanced. """
+        for which genes are independent and somewhat well balanced."""
         S0, D0 = self.param['S0'], self.param['D0']
         S1, D1 = self.param['S1'], self.param['D1']
         K0, K1, B, M, S = self.K0, self.K1, self.B, self.M, self.S
@@ -200,6 +210,8 @@ class AutoActivFull(GeneNetworkFull):
     def get_theta(self):
         """Get the effective theta of the model."""
         theta0 = self.get_theta_base()
+        for i in self.basal.keys():
+            theta0[i-1,i-1] += self.basal[i]
         for (i,j) in self.inter.keys():
             theta0[j-1,i-1] += self.inter[i,j]
         return theta0
@@ -209,13 +221,13 @@ class AutoActivFull(GeneNetworkFull):
         NB: This is the specific form of the AutoActiv class."""
         theta = self.get_theta()
         G = np.size(theta[0])
-        a, s, m = np.exp(theta), self.S, self.M
+        A, S, M = np.exp(theta), self.S, self.M
         vP = P*np.ones((G,1))
-        x = (vP/s)**m
+        X = (vP/S)**M
         I = np.ones((G,G)) - np.diag(np.ones(G))
-        Phi = np.prod((I + a*x)/(1 + I*x), axis=1)
-        k0, k1 = self.K0, self.K1
-        return (k0 + k1*Phi)/(1 + Phi)
+        Phi = np.prod((I + A*X)/(1 + I*X), axis=1)
+        K0, K1 = self.K0, self.K1
+        return (K0 + K1*Phi)/(1 + Phi)
 
     def koff(self, P):
         """Interaction function kon (on->off rate), given protein levels P.
@@ -255,27 +267,30 @@ class AutoActivBursty(GeneNetworkBursty):
     S : square matrix/array of positive floats
         Values for the Hill threshold coefficients
 
-    inter : square matrix/array of floats
-        - if i != j, inter[i,j] is the strength of interaction i -> j
-        - if i == j this is rather a modification of basal promoter activity.
+    basal : dictionary {i: float}
+        For i = 1,...,size, basal[i] represents basal activity of gene i.
+        This may aggregate self-interaction and unobserved external input.
+
+    inter : dictionary {(i,j): float} with i,j = 1,...,size
+        For i != j, inter[i,j] is the strength of interaction i -> j.
     """
     def __init__(self, size):
         ### Define default global parameters
         G = size
-        S0, D0 = 1*np.ones(G), 1*np.ones(G)
-        S1, D1 = 0.2*np.ones(G), 0.2*np.ones(G)
+        S0, D0 = s0*np.ones(G), d0*np.ones(G)
+        S1, D1 = s1*np.ones(G), d1*np.ones(G)
         ### Model-specific basal parameters
-        K0, K1, B = 0.2*D0, 2.2*D0, 5*D0
-        M, S = 2*np.ones((G,G)), 0.1*np.ones((G,G))
+        K0, K1, B = k0*np.ones(G), k1*np.ones(G), b*np.ones(G)
+        M, S = m*np.ones((G,G)), s*np.ones((G,G))
         self.K0, self.K1, self.B, self.M, self.S = K0, K1, B, M, S
-        ### Interactions
-        self.inter = {}
+        ### Basal activity and interactions
+        self.basal, self.inter = {}, {}
         ### State of the system
         types = [('M','float'), ('P','float')]
         state = np.array([(0,0) for i in range(G)], dtype=types)
         ### Simulation parameters
         thin = np.sum(K1) # Only correct if K1 > K0
-        euler = 0.1/np.max(self.B)
+        euler = 0.1/np.max(B)
         ### Finally set the global GeneNetworkBursty default attributes
         types = [('S0','float'), ('D0','float'),
                  ('S1','float'), ('D1','float')]
@@ -293,6 +308,8 @@ class AutoActivBursty(GeneNetworkBursty):
     def get_theta(self):
         """Get the effective theta of the model."""
         theta0 = self.get_theta_base()
+        for i in self.basal.keys():
+            theta0[i-1,i-1] += self.basal[i]
         for (i,j) in self.inter.keys():
             theta0[j-1,i-1] += self.inter[i,j]
         return theta0
@@ -302,44 +319,16 @@ class AutoActivBursty(GeneNetworkBursty):
         NB: This is the specific form of the AutoActiv class."""
         theta = self.get_theta()
         G = np.size(theta[0])
-        a, s, m = np.exp(theta), self.S, self.M
+        A, S, M = np.exp(theta), self.S, self.M
         vP = P*np.ones((G,1))
-        x = (vP/s)**m
+        X = (vP/S)**M
         I = np.ones((G,G)) - np.diag(np.ones(G))
-        Phi = np.prod((I + a*x)/(1 + I*x), axis=1)
-        k0, k1 = self.K0, self.K1
-        return (k0 + k1*Phi)/(1 + Phi)
+        Phi = np.prod((I + A*X)/(1 + I*X), axis=1)
+        K0, K1 = self.K0, self.K1
+        return (K0 + K1*Phi)/(1 + Phi)
 
     def koff(self, P):
         """Interaction function kon (on->off rate), given protein levels P.
         NB: This is the specific form of the AutoActiv class.
         In this model, koff actually does not depend on P."""
         return self.B
-
-
-### Load an auto-activation based model
-def load(obj, mode='full'):
-    """
-    Define a network model from any object using its attributes.
-    
-    Input
-    -----
-    obj : any object with the right attributes
-    mode : 'full' (default) or 'bursty'
-    """
-    if mode == 'full': network = AutoActivFull(obj.G)
-    elif mode == 'bursty': network = AutoActivBursty(obj.G)
-    else: raise ValueError('mode must be either "full" or "bursty"')
-    network.param['S0'] = obj.S0
-    network.param['D0'] = obj.D0
-    network.param['S1'] = obj.S1
-    network.param['D1'] = obj.D1
-    network.K0 = obj.K0
-    network.K1 = obj.K1
-    network.B = obj.B
-    network.M = obj.M
-    network.S = obj.S
-    network.inter = obj.inter
-    if mode == 'full': network.thin_cst = np.sum(obj.B)
-    elif mode == 'bursty': network.thin_cst = np.sum(obj.K1)
-    return network

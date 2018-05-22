@@ -7,6 +7,9 @@ __version__ = '0.3'
 __author__ = 'Ulysse Herbach'
 __all__ = []
 
-from .model import load
 from .graphics import plotsim, histo
 __all__ += ['load', 'plotsim', 'histo']
+
+### Module for builing network examples
+from . import networks
+__all__ += ['networks']

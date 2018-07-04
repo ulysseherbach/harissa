@@ -8,7 +8,7 @@ __author__ = 'Ulysse Herbach'
 __all__ = []
 
 from .graphics import plotsim, histo
-__all__ += ['load', 'plotsim', 'histo']
+__all__ += ['plotsim', 'histo']
 
 ### Module for builing network examples
 from . import networks

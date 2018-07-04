@@ -7,13 +7,13 @@ import harissa.grnsim as ns
 import net0
 
 ### Define a full model including promoter states
-network1 = ns.load(net0, mode='full')
+network1 = ns.networks.load(net0, mode='full')
 ### Set the initial values
 network1.state['M'] = 1e-2
 network1.state['P'] = 5e-2
 
 ### Same but with the bursty limit model
-network2 = ns.load(net0, mode='bursty')
+network2 = ns.networks.load(net0, mode='bursty')
 network2.state['M'] = 1e-2
 network2.state['P'] = 5e-2
 

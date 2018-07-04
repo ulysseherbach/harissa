@@ -17,7 +17,7 @@ print(model)
 ### 2. More sophisticated approach
 timepoints = (0, 8, 24, 33, 48, 72)
 import net0
-network = ns.load(net0, mode='bursty')
+network = ns.networks.load(net0, mode='bursty')
 network.state['M'] = 1
 ### Structure (idcell, timepoint, gene 1, gene 2)
 types = [('idcell', 'int64'), ('timepoint', 'float64'),

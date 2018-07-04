@@ -59,7 +59,7 @@ def plotsim(timepoints, expression, fname=False, **kwargs):
                 linewidth=1.5, label='Gene {}'.format(i+1), color=cmap(i))
             ax2.legend(loc='upper left')
     elif (model == 'bursty'):
-        fig = plt.figure(figsize=(12,6), dpi=100)
+        fig = plt.figure(figsize=(12,4.75), dpi=100)
         gs = gridspec.GridSpec(2,1)
         gs.update(hspace=0.55)
         # gs.update(left=0.1, right=0.5, wspace=0.4)

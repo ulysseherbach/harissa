@@ -10,7 +10,7 @@ var_tol = 1e-5
 var_iter_max = 1000
 
 ### Penaliztion
-penalization = 2*1.5e-2
+penalization = 3e-2
 lasso_mix = 0.9
 
 ### Maximization step

@@ -1,28 +1,24 @@
 ### Inferring networks using the automodel package ###
-import sys
-sys.path.append('../')
+import sys; sys.path.append('../')
 import numpy as np
-import harissa.automodel as am
+from harissa import automodel
 
-### Load the data
+### Load the data example (5 genes)
 data = np.loadtxt('data.txt')
-### Number of genes
-G = np.size(data[0])
-### Hyperparameter values
-a = np.array([G*[0.2], G*[2], G*[0.5]])
-c = np.array(5*[1])
 
-### Initial theta value
-theta0 = am.neutral_theta(a, c)
+### Hyperparameter values
+G = np.size(data[0]) # Number of genes
+a = np.array([G*[0.2], G*[2], G*[0.5]])
+c = np.array(G*[1])
+
+### Initial theta value for the inference
+theta0 = automodel.neutral_theta(a, c)
 
 ### Penalization strength
 # am.config.penalization = 3e-2
 
 ### Inference
-res = am.infer(data, theta0, a, c, nsteps=10, traj_theta=True)
-
-### Plot the trajectory of theta along the steps
-res.traj_theta.plot('test_vtheta.pdf')
+res = automodel.infer(data, theta0, a, c, nsteps=10)
 
 ### Inferred theta value
 print(res.theta)

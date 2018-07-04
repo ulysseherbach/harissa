@@ -117,9 +117,9 @@ def infer(data, info=False, lc=None):
     Output
     ------
     res : an object of class autoactiv.model
-        model.a = (k0, m, koff/s)
-        model.theta = {timepoint t: theta[t]}
-        model.c = cluster number
+        res.a = (k0, m, koff/s)
+        res.theta = {timepoint t: theta[t]}
+        res.c = cluster number
         NB: hence k1 = a[0] + c*a[1] and the model
         is a mixture of c+1 gamma distributions."""
     types = [ ('idcell', 'int64'), ('timepoint', 'float64'),

@@ -5,7 +5,7 @@ import numpy as np
 G = 3 # Number of genes
 S0 = 1*np.ones(G) # mRNA creation rates
 D0 = 1*np.ones(G) # mRNA degradation rates
-S1 = 1*np.ones(G) # Protein creation rates
+S1 = 0.2*np.ones(G) # Protein creation rates
 D1 = 0.2*np.ones(G) # Protein degradation rates
 
 ### Specific model parameters
@@ -16,4 +16,5 @@ M = 3*np.ones((G,G))
 S = 0.12*np.outer(np.ones(G), S0*S1/(D0*D1))
 
 ### Interactions
-inter = {(1,1): 5, (1,2): 5, (2,3): 5}
+basal = {1: 5}
+inter = {(1,2): 5, (2,3): 5}

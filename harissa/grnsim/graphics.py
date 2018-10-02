@@ -110,3 +110,8 @@ def histo(M, P, fname=None):
     if fname is not None:
         fig.savefig(fname, dpi=100, bbox_inches='tight', frameon=False)
         plt.close()
+
+### Testing
+# cmap = plt.get_cmap("tab10") # Get the default color cycle
+# for i in range(5):
+#     print(cmap(i))

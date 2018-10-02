@@ -47,7 +47,7 @@ class GeneNetworkFull:
         return 1*np.sum(self.param['D0'])
 
     def koff(self, P):
-        """Interaction function kon (on->off rate), given protein levels P.
+        """Interaction function koff (on->off rate), given protein levels P.
         NB: This is an arbitrary default constant value."""
         return 10*np.sum(self.param['D0'])
 
@@ -113,7 +113,7 @@ class GeneNetworkBursty:
         return 1*np.sum(self.param['D0'])
 
     def koff(self, P):
-        """Interaction function kon (on->off rate), given protein levels P.
+        """Interaction function koff (on->off rate), given protein levels P.
         NB: This is an arbitrary default constant value."""
         return 10*np.sum(self.param['D0'])
 
@@ -230,7 +230,7 @@ class AutoActivFull(GeneNetworkFull):
         return (K0 + K1*Phi)/(1 + Phi)
 
     def koff(self, P):
-        """Interaction function kon (on->off rate), given protein levels P.
+        """Interaction function koff (on->off rate), given protein levels P.
         NB: This is the specific form of the AutoActiv class.
         In this model, koff actually does not depend on P."""
         return self.B
@@ -328,7 +328,7 @@ class AutoActivBursty(GeneNetworkBursty):
         return (K0 + K1*Phi)/(1 + Phi)
 
     def koff(self, P):
-        """Interaction function kon (on->off rate), given protein levels P.
+        """Interaction function koff (on->off rate), given protein levels P.
         NB: This is the specific form of the AutoActiv class.
         In this model, koff actually does not depend on P."""
         return self.B

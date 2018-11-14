@@ -16,3 +16,6 @@ __all__ += ['scdata']
 
 from .model import model
 __all__ += ['model']
+
+from .graphics import plotHistoGenes
+__all__ += ['plotHistoGenes']

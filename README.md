@@ -9,16 +9,13 @@ It consists in:
 * for mechanistic-based gene network Inference
 * along with a Stochastic Simulation Algorithm
 
-**NB:** This repository is still under construction... but will be ready soon
+**NB:** This repository is still under construction... but will hopefully be ready soon
 
 
 #### Basic info
 
 The package depends on the following standard scientific libraries:
+
 - numpy
 - scipy
 - matplotlib
-
-Also, you can install it with pip:
-
-	pip install harissa

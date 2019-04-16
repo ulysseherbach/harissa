@@ -3,7 +3,7 @@
 ### Tools for mechanistic-based gene network inference
 This is a Python package for inferring gene networks from single-cell data.
 It consists in *Hartree Approximation* and *Random fields* for mechanistic-based gene network *Inference* along with a *Stochastic Simulation Algorithm*.
-This package was implemented in the context of a [mechanistic approach to inferring gene regulatory networks from single-cell data](https://bmcsystbiol.biomedcentral.com/articles/10.1186/s12918-017-0487-0).
+This package was implemented in the context of a [mechanistic approach to gene regulatory network inference from single-cell data](https://bmcsystbiol.biomedcentral.com/articles/10.1186/s12918-017-0487-0).
 
 ### Important
 Currently, the `harissa` package consists of 3 independent subpackages:

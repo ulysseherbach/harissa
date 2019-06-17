@@ -1,20 +1,20 @@
 """
 Harissa
--------
+=======
 
-Tools for mechanistic-based gene network inference
+Gene regulatory network inference from single-cell data
+-------------------------------------------------------
 
-Current subpackages
--------------------
-autoactiv: auto-activation inference (network hyperparameters)
-automodel: network inference using a mechanistic-based random field
-grnsim: stochastic simulation of the corresponding dynamical model
-hartree: network inference using a self-consistent proteomic field
+Mechanistic-based gene network inference using a
+self-consistent proteomic field (SCPF) approximation.
+It is analogous to the unrestricted Hartree approximation
+in quantum mechanics, applied to gene expression modeled
+as a piecewise-deterministic Markov process (PDMP).
 
 Author: Ulysse Herbach (ulysse.herbach@inria.fr)
 """
-__version__ = '0.2'
-__all__ = []
+__version__ = '1.0'
 
-from .hartree import SingleCellData
-__all__ += ['SingleCellData']
+from .model import NetworkModel, Cascade, Tree
+
+__all__ = ['NetworkModel', 'Cascade', 'Tree']

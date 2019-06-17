@@ -9,5 +9,4 @@
 *.rtf
 
 # Working files
-main.py
-harissa/hartree
+tests.py

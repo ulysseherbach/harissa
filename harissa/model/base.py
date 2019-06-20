@@ -180,8 +180,8 @@ class NetworkModel:
         if file is not None: sparse.save_npz(file+'_filter_mechanistic', f)
         self.filter = f
 
-    def fit(self, data, l=1e-3, tol=1e-4, max_iter=10, dense=False,
-        verb=False):
+    def fit(self, data, threshold=0, alpha=1e-3, l=1e-2, tol=1e-4,
+        max_iter=10, dense=False, verb=False):
         """
         Fit the network model to the data.
         Return the list of successive objective function values.
@@ -189,6 +189,11 @@ class NetworkModel:
         C, G = data.shape
         times = set(data[:,0])
 
+        # Preprocessing
+        self.get_distances(data, verb=verb)
+        self.get_filter(threshold=threshold, alpha=alpha, verb=verb)
+        self.get_kinetics(data, verb=verb)
+        
         # Get the minimal list of genes
         if self.filter is not None:
             # Keep only interacting genes
@@ -241,7 +246,8 @@ class NetworkModel:
             if fmax > 0:
                 gi, gj = genes[i], genes[j]
                 self.inter[gi,gj] = np.mean(s[f==fmax]) * fmax
-        return y, q
+        self.y = y
+        self.q = q
         
     def simulate(self, t, burnin=None, verb=False):
         """

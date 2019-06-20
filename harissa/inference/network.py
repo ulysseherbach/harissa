@@ -219,7 +219,7 @@ def expectation(x, y, inter, basal, a, c, d, verb=False):
         y[k] = res.x
         # if verb: print('Fitted y[{}] in {} iterations'.format(k+1,res.nit))
         n += res.nit
-    if verb: print('Fitted y in {:.2f} iterations on average'.format(n/C))
+    # if verb: print('Fitted y in {:.2f} iterations on average'.format(n/C))
 
 def maximization(x, y, inter, basal, a, b, c, mask, l, verb=False):
     """
@@ -256,8 +256,8 @@ def maximization(x, y, inter, basal, a, b, c, mask, l, verb=False):
             for k, t in enumerate(times):
                 dtheta[G+k*N:G+(k+1)*N] = np.reshape(-dq[1][t], (N,))
             return dtheta
-        if mask is not None: vmask = np.reshape(mask, (N,))
-        else: vmask = np.zeros(N)
+        # if mask is not None: vmask = np.reshape(mask, (N,))
+        # else: vmask = np.zeros(N)
 
     # Sparse case
     else:
@@ -288,7 +288,7 @@ def maximization(x, y, inter, basal, a, b, c, mask, l, verb=False):
             for k, t in enumerate(times):
                 dtheta[G+k*N:G+(k+1)*N] = -dq[1][t][I,J]
             return dtheta
-        vmask = V
+        # vmask = V
 
     # Solve the minimization problem
     # interb = []
@@ -307,7 +307,7 @@ def maximization(x, y, inter, basal, a, b, c, mask, l, verb=False):
         if not sparse.issparse(mask): inter[t] = np.reshape(Vtheta, (G,G))
         else: inter[t] = sparse.csc_matrix((Vtheta,(I,J)), (G,G))
     if not res.success: print('Warning, maximization step failed')
-    if verb: print('Fitted theta in {} iterations'.format(res.nit))
+    # if verb: print('Fitted theta in {} iterations'.format(res.nit))
 
 def inference(x, inter, basal, a, b, c, mask, l=1e-3,
     tol=1e-4, max_iter=10, verb=False):
@@ -326,7 +326,7 @@ def inference(x, inter, basal, a, b, c, mask, l=1e-3,
     obj_increase = tol + 1
     iter_count = 0
     while (iter_count < max_iter) and (obj_increase > tol):
-        print('EM iteration {}...'.format(iter_count+1))
+        if verb: print('EM iteration {}...'.format(iter_count+1))
         # EM routine
         expectation(x, y, inter, basal, a, c, d, verb=verb)
         maximization(x, y, inter, basal, a, b, c, mask, l, verb=verb)

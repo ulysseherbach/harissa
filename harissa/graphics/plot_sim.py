@@ -10,7 +10,7 @@ def plot_sim(t, m, p, genes, file=None):
     Plot the expression path of a gene network
     """
     G = len(genes)
-    cmap = plt.get_cmap("tab10") # Get the default color cycle
+    cmap = plt.get_cmap('tab10') # Get the default color cycle
     fig = plt.figure(figsize=(12,4.75), dpi=100)
     gs = gridspec.GridSpec(2,1)
     gs.update(hspace=0.55)

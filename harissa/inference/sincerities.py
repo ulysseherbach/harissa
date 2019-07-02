@@ -43,19 +43,23 @@ def distance_matrix(data, verb=False):
         scale = np.min(dt)/dt # Scales of time intervals
         # Initialize the matrix
         d = np.zeros((T-1,G))
-        d[0,0] = scale[0] * 1 # Symbolize the stimulus
         # Fill the matrix
         for g in range(1,G):
-            if verb: print('Computing distances for gene {}'.format(g))
+            r = '\n' if g == 1 else ''
+            if verb: print(r+'Computing distances for gene {}'.format(g))
             times = data[:,0]
             x = data[:,g]
             for i in range(T-1):
                 x1 = x[times==t[i]]
                 x2 = x[times==t[i+1]]
                 d[i,g] = scale[i] * ksdistance(x1,x2)
+        # OPTION 1: symbolize the stimulus with 1
+        d[0,0] = scale[0] * 2
+        # OPTION 2: normalize the stimulus
+        # d[0,0] = np.max(d[:,1:]) - np.min(d[:,1:])
         return d
 
-def score_matrix(d, alpha=None, verb=False):
+def score_matrix(d, alpha=None, l1=0.5, verb=False):
     """
     Compute a sparse matrix f by keeping only the most likely links,
     with f[i,j] denoting the statistical strength of influence i -> j.
@@ -68,11 +72,11 @@ def score_matrix(d, alpha=None, verb=False):
         x[t] = d[t]
         y[t] = d[t+1]
     x = sparse.csr_matrix(x)
-    model = ElasticNet(fit_intercept=False, positive=True)
+    model = ElasticNet(fit_intercept=False, positive=True, l1_ratio=l1)
     # Possible choice by 1-fold cross validation
     if alpha is None:
         n_alphas = 10
-        valpha = np.logspace(-3,-2,n_alphas)
+        valpha = np.logspace(-4,-2,n_alphas)
         # n_alphas = 1
         # valpha = np.logspace(-1,-1,n_alphas)
         verror = np.zeros(n_alphas)

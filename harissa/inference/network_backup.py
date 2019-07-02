@@ -33,6 +33,8 @@ from numpy import exp, log
 from scipy.special import gammaln, psi
 from scipy import sparse
 from scipy.optimize import minimize
+import itertools
+import matplotlib.pyplot as plt
 
 def penalization(inter, l):
     """
@@ -41,35 +43,23 @@ def penalization(inter, l):
     if l == 0: return 0
     p = 0
     for t in inter.keys():
-        if not sparse.issparse(inter[t]):
-            p += np.sum(inter[t]**2)
-            f = abs(inter[t]*inter[t].T)
-            p += np.sum(f - np.diag(np.diag(f)))
+        if not sparse.issparse(inter[t]): p += np.sum(inter[t]**2)
         else: p += inter[t].multiply(inter[t]).sum()
     return l * p
-
-def stabilize(phi):
-    """
-    Prevent phi from taking too high or low values.
-    """
-    pmin, pmax = 1e-100, 1e+100
-    phi[phi < pmin] = pmin
-    phi[phi > pmax] = pmax
 
 def obj_cell(x, y, inter, basal, a, c, d):
     """
     Objective function to be maximized (one cell).
     """
     phi = exp(basal + y @ inter)
-    stabilize(phi)
     # Remove the stimulus
     sigma = phi[1:] / (phi[1:] + 1)
     x, y = x[1:], y[1:]
     a, c, d = a[1:], c[1:], d[1:]
     # Compute the log-likelihood
-    ay = a * y
+    asigma = a * sigma
     csigma = c * sigma
-    q = (d*ay + gammaln(ay + x) - gammaln(ay) - c*y
+    q = (d*asigma + gammaln(asigma + x) - gammaln(asigma) - c*y
         + (csigma-1)*log(y) + log(c)*csigma - gammaln(csigma))
     return np.sum(q)
 
@@ -78,15 +68,14 @@ def obj_t(x, y, inter, basal, a, c, d):
     Objective function to be maximized (all cells at one time point).
     """
     phi = exp(basal + y @ inter)
-    stabilize(phi)
     # Remove the stimulus
     sigma = phi[:,1:] / (phi[:,1:] + 1)
     x, y = x[:,1:], y[:,1:]
     a, c, d = a[1:], c[1:], d[1:]
     # Compute the log-likelihood
-    ay = a * y
+    asigma = a * sigma
     csigma = c * sigma
-    q = (d*ay + gammaln(ay + x) - gammaln(ay) - c*y
+    q = (d*asigma + gammaln(asigma + x) - gammaln(asigma) - c*y
         + (csigma-1)*log(y) + log(c)*csigma - gammaln(csigma))
     return np.sum(q)
 
@@ -102,6 +91,10 @@ def objective(x, y, inter, basal, a, b, c, l):
     for time in times:
         Q += obj_t(x[t==time], y[t==time], inter[time], basal, a, c, d)
     Q = Q/C - penalization(inter, l)
+    # OPTION: penalize opposite interaction signs
+    for t1, t2 in itertools.combinations(times, 2):
+        r = inter[t1] * inter[t2]
+        Q += 2 * l * np.sum(r * (r < 0))
     return Q
 
 def grad_y_obj_cell(x, y, inter, basal, a, c, d):
@@ -109,37 +102,83 @@ def grad_y_obj_cell(x, y, inter, basal, a, c, d):
     Objective function gradient with respect to y (one cell).
     """
     phi = exp(basal + y @ inter)
-    stabilize(phi)
     # Remove the stimulus
     sigma = phi[1:] / (phi[1:] + 1)
     # if np.min(sigma) == 0: print('Warning: sigma = 0')
     x, y = x[1:], y[1:]
     a, c, d = a[1:], c[1:], d[1:]
     # Compute the log-likelihood gradient
-    ay = a * y
+    asigma = a * sigma
     csigma = c * sigma
-    u = sigma * (1-sigma) * c * (log(c*y) - psi(csigma))
-    v = (csigma-1)/y - c + a*(d + psi(ay+x) - psi(ay))
+    u = sigma * (1-sigma) * (c*(log(c*y) - psi(csigma))
+        + a*(d + psi(asigma+x) - psi(asigma)))
+    v = (csigma-1)/y - c
     # Restore the stimulus
     u, v = np.append(0,u), np.append(0,v)
     dq = inter @ u + v
     dq[0] = 0
     return dq
 
+# def get_u_cell(x, y, inter, basal, a, c, d):
+#     """
+#     Compute the pivotal vector u for one cell.
+#     """
+#     phi = exp(basal + y @ inter)
+#     # Remove the stimulus
+#     sigma = phi[1:] / (phi[1:] + 1)
+#     x, y = x[1:], y[1:]
+#     a, c, d = a[1:], c[1:], d[1:]
+#     # Compute the log-likelihood
+#     asigma = a * sigma
+#     csigma = c * sigma
+#     u = sigma * (1-sigma) * (c*(log(c*y) - psi(csigma))
+#         + a*(d + psi(asigma+x) - psi(asigma)))
+#     return np.append(0,u)
+
 def get_u_t(x, y, inter, basal, a, c, d):
     """
     Compute the pivotal vector u for all cells at one time point.
     """
     phi = exp(basal + y @ inter)
-    stabilize(phi)
     # Remove the stimulus
     sigma = phi[:,1:] / (phi[:,1:] + 1)
     x, y = x[:,1:], y[:,1:]
     a, c, d = a[1:], c[1:], d[1:]
     # Compute the log-likelihood
+    asigma = a * sigma
     csigma = c * sigma
-    u = sigma * (1-sigma) * c * (log(c*y) - psi(csigma))
+    u = sigma * (1-sigma) * (c*(log(c*y) - psi(csigma))
+        + a*(d + psi(asigma+x) - psi(asigma)))
     return np.append(np.zeros((x[:,0].size,1)), u, axis=1)
+
+# def grad_theta_obj(x, y, inter, basal, a, c, d, mask, l):
+#     """
+#     Objective gradient with respect to theta = (basal, inter) for all cells.
+#     The result is in the form dq = (dbasal, dinter) with dinter[t] being
+#     either dense if inter[t] is dense or sparse if inter[t] is sparse.
+#     """
+#     C, G = x.shape
+#     t = x[:,0]
+#     # Initialize dbasal and dinter
+#     dbasal = np.zeros(G)
+#     dinter = {}
+#     # Add terms while keeping the sparsity structure
+#     for k in range(C):
+#         u = get_u_cell(x[k], y[k], inter[t[k]], basal, a, c, d)
+#         dbasal += u
+#         # Build dinter for cell k
+#         if mask is None:
+#             v = np.diag(y[k]) @ np.ones((G,G)) @ np.diag(u)
+#         elif not sparse.issparse(mask):
+#             v = np.diag(y[k]) @ abs(mask) @ np.diag(u)
+#         else:
+#             v = sparse.diags(y[k]) * abs(mask) * sparse.diags(u)
+#         # Add it to the relevant time point
+#         if t[k] in dinter: dinter[t[k]] += v
+#         else: dinter[t[k]] = v
+#     dbasal = dbasal/C
+#     for t in dinter.keys(): dinter[t] = dinter[t]/C - 2*l*inter[t]
+#     return dbasal, dinter
 
 def grad_theta_obj(x, y, inter, basal, a, c, d, mask, l):
     """
@@ -163,9 +202,12 @@ def grad_theta_obj(x, y, inter, basal, a, c, d, mask, l):
         elif not sparse.issparse(mask): dinter[time] = abs(mask) * m
         else: dinter[time] = abs(mask).multiply(m)
         dinter[time] = dinter[time]/C - 2*l*inter[time]
-        f = inter[time].T * np.sign(inter[time]) * np.sign(inter[time].T)
-        dinter[time] += -2*l*(f-np.diag(np.diag(f)))
     dbasal = dbasal/C
+    # OPTION: penalize opposite interaction signs
+    for t1, t2 in itertools.combinations(times, 2):
+        r = inter[t1] * inter[t2]
+        dinter[t1] += 2 * l * inter[t2] * (r < 0)
+        dinter[t2] += 2 * l * inter[t1] * (r < 0)
     return dbasal, dinter
 
 def expectation(x, y, inter, basal, a, c, d, verb=False):
@@ -190,12 +232,36 @@ def expectation(x, y, inter, basal, a, c, d, verb=False):
         res = minimize(f, p0, method='L-BFGS-B', jac=Df, bounds=bounds)
         # if not res.success: print('Warning, expectation step failed')
         y[k] = res.x
+        # ALTERNATIVE 1
+        # y[k] = res.x + 1/c # Emulate mean instead of mode
+        # ALTERNATIVE 2
+        # phi = exp(basal + res.x @ inter[t[k]])
+        # sigma = phi[1:] / (phi[1:] + 1)
+        # y[k,1:] = sigma
         # if verb: print('Fitted y[{}] in {} iterations'.format(k+1,res.nit))
         # n += res.nit
+
+        # N = 100
+        # g = 2
+        # if k in {0,C-1}:
+        #     plt.figure(figsize=(8,4), dpi=100)
+        #     vy = np.linspace(1e-5,1.5,N)
+        #     vp = np.zeros(N)
+        #     for i in range(N):
+        #         y0 = y[k].copy()
+        #         y0[g] = vy[i]
+        #         vp[i] = exp(obj_cell(x[k], y0, inter[t[k]], basal, a, c, d))
+        #     plt.plot(vy, vp, color='dodgerblue',
+        #         label=r'$x_{} = {}$'.format(g,x[k,g]))
+        #     plt.xlim(vy[0], vy[-1])
+        #     plt.legend()
+        #     file = 'Y_X_{}'.format(k) + '.pdf'
+        #     plt.savefig(file, dpi=100, bbox_inches='tight', frameon=False)
+        #     plt.close()
+
     # if verb: print('Fitted y in {:.2f} iterations on average'.format(n/C))
 
-def maximization(x, y, inter, basal, a, b, c, mask, l, sign=False,
-    verb=False):
+def maximization(x, y, inter, basal, a, b, c, mask, l, verb=False):
     """
     Maximization step.
     """
@@ -230,8 +296,8 @@ def maximization(x, y, inter, basal, a, b, c, mask, l, sign=False,
             for k, t in enumerate(times):
                 dtheta[G+k*N:G+(k+1)*N] = np.reshape(-dq[1][t], (N,))
             return dtheta
-        if mask is not None: vmask = np.reshape(mask, (N,))
-        else: vmask = None
+        # if mask is not None: vmask = np.reshape(mask, (N,))
+        # else: vmask = np.zeros(N)
 
     # Sparse case
     else:
@@ -262,17 +328,16 @@ def maximization(x, y, inter, basal, a, b, c, mask, l, sign=False,
             for k, t in enumerate(times):
                 dtheta[G+k*N:G+(k+1)*N] = -dq[1][t][I,J]
             return dtheta
-        vmask = V
+        # vmask = V
 
     # Solve the minimization problem
-    if (vmask is not None) and sign:
-        interb = []
-        for i in range(N):
-            if vmask[i] > 0: interb.append((0,None))
-            elif vmask[i] < 0: interb.append((None,0))
-            else: interb.append((None,None))
-        bounds = G * [(None,None)] + T * interb
-    else: bounds = (G + T*N) * [(None,None)]
+    # interb = []
+    # for i in range(N):
+    #     if vmask[i] > 0: interb.append((0,None))
+    #     elif vmask[i] < 0: interb.append((None,0))
+    #     else: interb.append((None,None))
+    # bounds = G * [(None,None)] + T * interb
+    bounds = (G + T*N) * [(None,None)]
 
     res = minimize(f, theta0, method='L-BFGS-B', jac=Df, bounds=bounds)
     theta = res.x
@@ -285,7 +350,7 @@ def maximization(x, y, inter, basal, a, b, c, mask, l, sign=False,
     # if verb: print('Fitted theta in {} iterations'.format(res.nit))
 
 def inference(x, inter, basal, a, b, c, mask, l=1e-3,
-    tol=1e-4, max_iter=10, sign=False, verb=False):
+    tol=1e-4, max_iter=10, verb=False):
     """
     Network inference procedure using a CEM algorithm.
     Return the list of successive objective function values.
@@ -307,12 +372,9 @@ def inference(x, inter, basal, a, b, c, mask, l=1e-3,
         if verb: print('EM iteration {}...'.format(iter_count+1))
         # EM routine
         expectation(x, y, inter, basal, a, c, d, verb=verb)
-        maximization(x, y, inter, basal, a, b, c, mask, l,
-            sign=sign, verb=verb)
+        maximization(x, y, inter, basal, a, b, c, mask, l, verb=verb)
         obj_new = objective(x, y, inter, basal, a, b, c, l)
         q.append(obj_new)
         obj_increase = q[-1] - q[-2]
         iter_count += 1
-    if iter_count < max_iter:
-        print('Converged ({} steps)'.format(iter_count))
     return y, q

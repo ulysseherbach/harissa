@@ -21,11 +21,11 @@ def plot_sim(t, m, p, genes, file=None):
     ax2.set_title('Proteins')
     for i in range(G):
         g = genes[i]
-        ax1.plot(t, m[:,i], c=cmap(i), lw=1.5, label='Gene {}'.format(g))
+        ax1.plot(t, m[:,i], c=cmap(i), label='Gene {}'.format(g))
         ax1.set_xlim(t[0], t[-1])
-        ax1.set_ylim(0, 1*np.max(m))
+        ax1.set_ylim(0, 1.1*np.max(m))
         ax1.legend(loc='upper right')
-        ax2.plot(t, p[:,i], c=cmap(i), lw=1.5, label='Gene {}'.format(g))
+        ax2.plot(t, p[:,i], c=cmap(i), label='Gene {}'.format(g))
         ax2.set_xlim(t[0], t[-1])
         ax2.set_ylim(0, np.max([1*np.max(p), 1]))
         ax2.legend(loc='upper right')

@@ -1,5 +1,5 @@
 """
-Computing relevant network layouts
+Plotting networks
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,10 +7,11 @@ from matplotlib.patches import Rectangle, FancyArrowPatch, Arc, Polygon
 from matplotlib.patches import ArrowStyle
 
 activ = '#96D255'
+inhib = '#E97356'
 # activ = '#93CD54'
-inhib = '#E97274'
+# inhib = '#E97274'
 
-def forces(p, e, width, height, root=False):
+def forces(p, e, width, height, root, grav):
     """
     Compute the vector of forces for vertices of a given graph.
     Based on the spring embedder of Fruchterman & Reingold (1991).
@@ -38,7 +39,7 @@ def forces(p, e, width, height, root=False):
             f2[j] -= (d/l) * u
             # Add some gravity
             if root:
-                g = 0.1 * n
+                g = grav * n
                 v = np.array([u[1],-u[0]])/d
                 f2[j] += (g/d) * u[0] * v
     # 3. Add rigidity for edge length
@@ -56,13 +57,12 @@ def forces(p, e, width, height, root=False):
     if root: f[0] = 0
     return f/(n*np.sqrt(width**2 + height**2))
 
-def graph_layout(v, e, width, height, tol=None, root=False, verb=False):
+def graph_layout(v, e, width, height, tol, root, grav, verb):
     """
     Compute a relevant graph layout by minimizing an energy.
     The output is a list of tuples [(x0,y0),(x1,y1),...] where
     xv and yv are coordinates of vertex v, both within [0,1].
     """
-    if tol is None: tol = 1e-3
     max_iter = 10000
     n = len(v)
     xmin, ymin = 1/n, 1/n
@@ -78,7 +78,7 @@ def graph_layout(v, e, width, height, tol=None, root=False, verb=False):
     delta = 1.5e-1
     k, c = 0, 0
     while (k == 0) or (k < max_iter and c > tol):
-        f = forces(p, e, width, height, root=root)
+        f = forces(p, e, width, height, root, grav)
         p = p + delta*f
         c = np.max(np.sqrt(np.sum(f**2, axis=1)))
         k += 1
@@ -89,85 +89,46 @@ def graph_layout(v, e, width, height, tol=None, root=False, verb=False):
 
 
 # Plotting functions
-def node(k, ax, p, name, color=None, fontsize=None):
-    if color is None: color = '#F2F2F2'
-    if fontsize is None: fontsize = 8
-    r = 0.1
+def node(k, ax, p, name, fontsize, lw, r):
     x, y = p[k,0], p[k,1]
-    circle0 = plt.Circle((x, y), radius=r, color=color)
+    circle0 = plt.Circle((x, y), radius=r, color='#F2F2F2')
     circle0.zorder=2
     ax.add_artist(circle0)
     if k != 0:
-        # circle0 = plt.Circle((x, y), radius=r, color=color, zorder=2)
-        # ax.add_artist(circle0)
         circle1 = plt.Circle((x, y), radius=r, fill=False,
-            color='lightgray', lw=1, zorder=3)
+            color='lightgray', lw=lw, zorder=3)
         ax.add_artist(circle1)
-        ax.text(x, y - 0.007, name, color='gray', fontsize=fontsize,
+        ax.text(x, y-0.007, name, color='gray', fontsize=fontsize, zorder=4,
             horizontalalignment='center', verticalalignment='center')
     else:
-        # circle1 = plt.Circle((x, y), radius=r, fill=False,
-            # color='darkgray', lw=1, zorder=3)
         circle1 = plt.Circle((x, y), radius=r, fill=False,
-            color='lightgray', lw=1, zorder=3)
+            color='lightgray', lw=lw, zorder=3)
         ax.add_artist(circle1)
+        ax.text(x, y-0.007, name, color='gray', fontsize=fontsize, zorder=4,
+            horizontalalignment='center', verticalalignment='center')
 
-# def link(k1, k2, ax, p, weight):
-#     l = 0.015
-#     r = 0.125
-#     u = p[k2] - p[k1]
-#     u0 = u/np.sqrt(np.sum(u**2))
-#     x0 = p[k1,0] + r*u0[0]
-#     y0 = p[k1,1] + r*u0[1]
-#     dx = u[0] - 2*r*u0[0]
-#     dy = u[1] - 2*r*u0[1]
-#     # Case 1: activation
-#     if weight > 0:
-#         arrow = FancyArrow(x0, y0, dx, dy, width=l, lw=0, color=activ,
-#             length_includes_head=True, head_width=0.05, head_length=None)
-#         arrow.zorder = 0
-#         ax.add_artist(arrow)
-#     # Case 2: inhibition
-#     elif weight < 0:
-#         arrow = FancyArrow(x0, y0, dx, dy, width=l, lw=0, color=inhib,
-#             length_includes_head=True, head_width=0, head_length=0)
-#         arrow.zorder = 0
-#         ax.add_artist(arrow)
-#         h_width = 0.07
-#         h_height = l
-#         x1, y1 = x0 + dx, y0 + dy
-#         d = np.sqrt(dx**2 + dy**2)
-#         u = np.array([dx, dy])/d
-#         v = np.array([dy,-dx])/d
-#         x2 = x1 + 0.2*h_height*u[0] + 0.5*h_width*v[0]
-#         y2 = y1 + 0.2*h_height*u[1] + 0.5*h_width*v[1]
-#         if v[0] > 0: angle = (180/np.pi)*np.arctan(v[1]/v[0]) - 180
-#         elif v[0] < 0: angle = (180/np.pi)*np.arctan(v[1]/v[0])
-#         else: angle = 90
-#         head = Rectangle((x2,y2), h_width, h_height, angle=angle, fc=inhib)
-#         head.zorder = 0
-#         ax.add_artist(head)
-
-def link(k1, k2, ax, p, weight, bend=0):
+def link(k1, k2, ax, p, weight, lw, hw, hl, shrink, bend=0):
+    # hw = 3.5
+    # hl = 5
     # Node coordinates
     x1, y1 = p[k1,0], p[k1,1]
     x2, y2 = p[k2,0], p[k2,1]
 
     # Case 1: activation
     if weight > 0:
-        style = ArrowStyle('Simple', tail_width=1.1,
-            head_width=3.5, head_length=5)
+        style = ArrowStyle('Simple', tail_width=lw,
+            head_width=hw, head_length=hl)
         arrow = FancyArrowPatch((x1,y1), (x2,y2), arrowstyle=style,
-        shrinkA=9, shrinkB=9, fc=activ, lw=0, zorder=0,
+        shrinkA=shrink, shrinkB=shrink, fc=activ, lw=0, zorder=0,
         connectionstyle='arc3,rad={}'.format(bend))
         ax.add_artist(arrow)
 
     # Case 2: inhibition
     if weight < 0:
-        style = ArrowStyle('Simple', tail_width=1.1,
+        style = ArrowStyle('Simple', tail_width=lw,
             head_width=0, head_length=1e-9)
         arrow = FancyArrowPatch((x1,y1), (x2,y2), arrowstyle=style,
-        shrinkA=9, shrinkB=9, fc=inhib, lw=0, zorder=0,
+        shrinkA=shrink, shrinkB=shrink, fc=inhib, lw=0, zorder=0,
         connectionstyle='arc3,rad={}'.format(bend))
         ax.add_artist(arrow)
 
@@ -203,7 +164,9 @@ def link(k1, k2, ax, p, weight, bend=0):
             angle=angle, fc=inhib, zorder=0)
         ax.add_artist(head)
 
-def link_auto(k, ax, p, weight, v=None):
+def link_auto(k, ax, p, weight, lw, hw, hl, v=None):
+    # lw = 1.1
+
     # Node coordinates
     x0, y0 = p[k,0], p[k,1]
 
@@ -230,12 +193,14 @@ def link_auto(k, ax, p, weight, v=None):
     if weight > 0:
         c = activ
         arc = Arc((x1,y1), d, d, angle=180, theta1=angle1, theta2=angle2-30,
-        lw=1.1, color=c, zorder=0)
+        lw=lw, color=c, zorder=0)
         ax.add_artist(arc)
 
         # Activation head
-        head_width = 0.045
-        head_length = 0.065
+        # head_width = 0.045
+        # head_length = 0.065
+        head_width = hw
+        head_length = hl
 
         angle = angle2 - 180 - 30
         theta = angle * (np.pi/180)
@@ -256,7 +221,7 @@ def link_auto(k, ax, p, weight, v=None):
     if weight < 0:
         c = inhib
         arc = Arc((x1,y1), d, d, angle=180, theta1=angle1, theta2=angle2-2,
-        lw=1.1, color=c, zorder=0)
+        lw=lw, color=c, zorder=0)
         ax.add_artist(arc)
 
         # Inhibition head
@@ -277,25 +242,30 @@ def link_auto(k, ax, p, weight, v=None):
 
 
 # Main function
-def plot_network(basal, inter, width=1, height=1, vdict=None,
-    tol=None, root=False, verb=False):
+def plot_network(inter, width=1, height=1, vdict=None, tol=1e-3, root=False,
+    grav=0.1, verb=False, axes=None, fontsize=8, lw=1.1, r=0.1, shrink=9,
+    hw=3.5, hl=5, hw_auto=0.045, hl_auto=0.065, layout=None):
     """
     Plot a network.
     """
-    n = np.size(basal)
+    n, n = inter.shape
     w, h = width/2.54, height/2.54 # Centimeters
     if vdict is None: vdict = {}
 
     # Compute layout
     v = list(range(n))
     e = list(zip(*inter.nonzero()))
-    p = graph_layout(v, e, w, h, tol=tol, root=root, verb=verb)
+    if layout is None:
+        p = graph_layout(v, e, w, h, tol, root, grav, verb)
+        # print(p)
+    else: p = layout
 
     # Draw layout
-    fig = plt.figure(figsize=(w,h), dpi=100, frameon=False)
-    plt.axes([0,0,1,1])
-    ax = fig.gca()
-    ax.axis('off')
+    if axes is None:
+        fig = plt.figure(figsize=(w,h), dpi=100, frameon=False)
+        ax = plt.axes([0,0,1,1])
+        ax.axis('off')
+    else: ax = axes
     ax.axis('equal')
     plt.xlim([0, w])
     plt.ylim([0, h])
@@ -303,14 +273,16 @@ def plot_network(basal, inter, width=1, height=1, vdict=None,
     # Draw nodes
     for k in range(n):
         name = '{}'.format(k)
-        node(k, ax, p, name)
+        node(k, ax, p, name, fontsize, lw-0.1, r)
 
     # Draw links
     for k1, k2 in e:
         weight = inter[k1,k2]
         if k1 != k2:
-            if (k2, k1) in e: link(k1, k2, ax, p, weight, bend=0.2)
-            else: link(k1, k2, ax, p, weight, bend=0)
+            if (k2, k1) in e: link(k1, k2, ax, p, weight, lw,
+                hw, hl, shrink, bend=0.2)
+            else: link(k1, k2, ax, p, weight, lw,
+                hw, hl, shrink, bend=0)
         else:
             v = vdict.get(k1)
             if v is None:
@@ -324,16 +296,16 @@ def plot_network(basal, inter, width=1, height=1, vdict=None,
             d = np.sqrt(np.sum(v**2))
             if d > 0: v = v/d
             else: v = np.array([0,1])
-            link_auto(k1, ax, p, weight, v)
+            link_auto(k1, ax, p, weight, lw, hw_auto, hl_auto, v)
 
-    path = 'network.pdf'
-    fig.savefig(path, dpi=100, bbox_inches=0, frameon=False)
-    plt.close()
+    if axes is None:
+        path = 'network.pdf'
+        fig.savefig(path, dpi=100, bbox_inches=0, frameon=False)
 
 
 # Tests
 if __name__ == '__main__':
-    np.random.seed(0)
+    # np.random.seed(1)
 
     # Simple graph example
     # v = list(range(10))
@@ -345,23 +317,29 @@ if __name__ == '__main__':
     import sys; sys.path.append('../../../Harissa')
     from harissa.generator import tree
 
-    n = 10
-    w = np.ones((n+1,n+1))
-    # w[1] = 10
-    # w[2] = 10
-    basal, inter = tree(n, weight=w)
-    np.random.seed(0)
-    # basal, inter = cascade(n)
-    inter[2,8] = -1
-    inter[8,2] = 1
-    inter[3,5] = -1
-    inter[5,3] = -1
-    # inter[10,10] = 1
-    for i in range(1,n+1):
-        inter[i,i] = 1
+    # n = 10
+    # w = np.ones((n+1,n+1))
+    # # w[1] = 10
+    # # w[2] = 10
+    # basal, inter = tree(n, weight=w)
+    # np.random.seed(0)
+    # # basal, inter = cascade(n)
+    # inter[2,8] = -1
+    # inter[8,2] = 1
+    # inter[3,5] = -1
+    # inter[5,3] = -1
+    # # inter[10,10] = 1
+    # # for i in range(1,n+1):
+    # #     inter[i,i] = 1
 
-    # vdict = {1:(-1,-0), 2:(1,0.6), 3:(-1,0.6), 5:(-1,0.2)}
-    plot_network(basal, inter, width=10, height=10, vdict=None,
-        tol=1e-3, root=True, verb=False)
+    from scipy import sparse
+    n = 4
+    inter = sparse.dok_matrix((n+1,n+1))
+    inter[0,1] = 1
+    inter[1,2] = 1
+    inter[1,3] = 1
+    inter[3,4] = 1
+    inter[4,1] = -1
+    plot_network(inter, width=4, height=4)
 
 

@@ -51,11 +51,11 @@ class NetworkModel:
             self.a = np.zeros((3,G))
             self.a[0] = 0 # Minimal Kon rate (normalized)
             self.a[1] = 2 # Maximal Kon rate (normalized)
-            self.a[2] = 1 # Constant Koff rate (normalized)
+            self.a[2] = 0.02 # Constant Koff rate (normalized)
             # Default degradation rates
             self.d = np.zeros((2,G))
-            self.d[0] = 1 # mRNA degradation rates
-            self.d[1] = 0.2 # protein degradation rates
+            self.d[0] = np.log(2)/9 # mRNA degradation rates
+            self.d[1] = np.log(2)/46 # protein degradation rates
             # Default network parameters
             self.basal = np.zeros(G)
             self.inter = sparse.dok_matrix((G,G))
@@ -68,15 +68,17 @@ class NetworkModel:
         if file is not None: np.save(file+'_distances', d)
         self.distances = d
 
-    def get_filter(self, threshold=0, alpha=None, file=None, verb=False):
+    def get_filter(self, threshold=0, alpha=None, l1=0.5,
+        file=None, verb=False):
         """
         Compute the sparse matrix of filtered interactions.
         """
         if self.distances is None:
             raise ValueError('distances not yet provided')
-        f = network_filter(self.distances, threshold, alpha, verb)
-        if file is not None: sparse.save_npz(file+'_filter', f)
-        self.filter = f
+        if self.filter is None:
+            f = network_filter(self.distances, threshold, alpha, l1, verb)
+            if file is not None: sparse.save_npz(file+'_filter', f)
+            self.filter = f
 
     def get_kinetics(self, data, threshold=0, file=None, verb=False):
         """
@@ -115,15 +117,16 @@ class NetworkModel:
             # a[0,g] = np.min(at)
             a[1,g] = np.max(at)
             a[2,g] = b
-            d[0,g] = 1
-            d[1,g] = 0.2
+            # if self.d is None:
+            #     d[0,g] = np.log(2)/9 
+            #     d[1,g] = np.log(2)/46
             if (self.filter is None) and (threshold == 0): a_time[:,g] = at
             else: a_time[:,g] = np.reshape(at, (T,1))
         # Default values for the stimulus (ignored)
         a[1,0] = 1
         a[2,0] = 1
-        d[0,0] = 1
-        d[1,0] = 0.2
+        # d[0,0] = 1
+        # d[1,0] = 0.2
         a_time[:,0] = t # Store the list of time points
         # # OPTION: set a unique a[1] for all genes
         # a1 = np.max(a[1,1:].toarray())
@@ -139,7 +142,7 @@ class NetworkModel:
                 sparse.save_npz(file+'_d', d.asformat('csr'))
                 sparse.save_npz(file+'_a_time', a_time.asformat('csr'))
         self.a = a
-        self.d = d
+        # self.d = d
         self.a_time = a_time
 
     def get_variations(self, file=None):
@@ -180,8 +183,8 @@ class NetworkModel:
         if file is not None: sparse.save_npz(file+'_filter_mechanistic', f)
         self.filter = f
 
-    def fit(self, data, threshold=0, alpha=1e-3, l=1e-2, tol=1e-4,
-        max_iter=10, dense=False, verb=False):
+    def fit(self, data, threshold=0, alpha=None, l=1e-2, tol=1e-4,
+        max_iter=100, dense=True, sign=False, l1=0.5, verb=False):
         """
         Fit the network model to the data.
         Return the list of successive objective function values.
@@ -191,14 +194,19 @@ class NetworkModel:
 
         # Preprocessing
         self.get_distances(data, verb=verb)
-        self.get_filter(threshold=threshold, alpha=alpha, verb=verb)
+        self.get_filter(threshold=threshold, alpha=alpha, l1=l1, verb=verb)
         self.get_kinetics(data, verb=verb)
-        
+
+        # OPTION: add the first moving gene
+        g1 = np.argmax(self.distances[0,1:]) + 1
+        if verb: print('First wave: gene {}'.format(g1))
+
         # Get the minimal list of genes
         if self.filter is not None:
             # Keep only interacting genes
             I, J = self.filter.nonzero()
-            genes = list(set(I) | set(J) | {0})
+            # genes = list(set(I) | set(J) | {0})
+            genes = list(set(I) | set(J) | {0} | {g1})
             genes.sort()
         else: genes = list(range(G))
         G0 = len(genes)
@@ -221,6 +229,12 @@ class NetworkModel:
             I, J, V = sparse.find(self.filter)
             for i, j, v in zip(I, J, np.sign(V)):
                 m[gene[i],gene[j]] = v
+            # OPTION: add the first moving gene
+            m[0,gene[g1]] = 1
+            # OPTION: remove all self-interactions
+            m[range(G0),range(G0)] = 0
+            # OPTION: keep stimulus everywhere
+            # m[0,1:] = 1
             if not dense:
                 inter = {t: 0*sparse.csc_matrix(m) for t in times}
                 mask = sparse.csc_matrix(m)
@@ -229,23 +243,29 @@ class NetworkModel:
         if self.filter is None or dense:
             inter = {t: np.zeros((G0,G0)) for t in times}
 
+        if verb:
+            print('Filtering mask:')
+            print(mask)
+
         # Inference procedure
         y, q = inference(x, inter, basal, a, b, c, mask, l=l, tol=tol,
-            max_iter=max_iter, verb=verb)
+            max_iter=max_iter, sign=sign, verb=verb)
 
         # Build the results
-        self.inter_time = inter
+        self.inter_time = {t: sparse.dok_matrix((G,G)) for t in times}
         self.basal = np.zeros(G)
         for i, g in enumerate(genes):
             self.basal[g] = basal[i]
         self.inter = sparse.dok_matrix((G,G))
         for i, j in zip(*mask.nonzero()):
-            s = np.array([np.sign(inter[t][i,j]) for t in times])
-            f = np.array([np.abs(inter[t][i,j]) for t in times])
+            gi, gj = genes[i], genes[j]
+            s = np.array([np.sign(inter[t][i,j]) for t in times - {0}])
+            f = np.array([np.abs(inter[t][i,j]) for t in times - {0}])
             fmax = np.max(f)
             if fmax > 0:
-                gi, gj = genes[i], genes[j]
                 self.inter[gi,gj] = np.mean(s[f==fmax]) * fmax
+            for t in times:
+                self.inter_time[t][gi,gj] = inter[t][i,j]
         self.y = y
         self.q = q
         
@@ -357,9 +377,18 @@ class NetworkModel:
             if self.filter[i,j] > 0: print('{} -> {}'.format(i,j))
             elif self.filter[i,j] < 0: print('{} -| {}'.format(i,j))
 
-    def save_preprocess(self, path):
+    def plot_obj(self, file=None):
+        from harissa.graphics import plot_obj as plot
+        plot(self.q, file=file)
+
+    def plot_xy(self, data, g1=1, g2=2, time=True, file=None):
+        from harissa.graphics import plot_xy as plot
+        plot(data, self.y, g1=g1, g2=g2, time=time, file=file)
+
+
+    def preprocess(self, path=''):
         """
-        Save preprocessing output files.
+        Perform preprocessing and save the results.
         """
         pass
 

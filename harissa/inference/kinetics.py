@@ -13,7 +13,7 @@ def estim_gamma(x):
     """
     m = np.mean(x)
     v = np.var(x)
-    if v==0: return 0, 1
+    if v == 0: return 0, 1
     else: return m*m/v, m/v
 
 def estim_gamma_poisson(x):
@@ -23,8 +23,14 @@ def estim_gamma_poisson(x):
     """
     m1 = np.mean(x)
     m2 = np.mean(x*(x-1))
-    b = m1/(m2 - m1**2)
-    a = m1*b
+    if m1 == 0: return 0, 1
+    r = m2 - m1**2
+    if r > 0: b = m1/r
+    else:
+        v = np.var(x)
+        if v == 0: return 0, 1
+        b = m1/v
+    a = m1 * b
     return a, b
 
 def transform(x):
@@ -59,7 +65,7 @@ def infer_kinetics(x, times, tol=1e-4, max_iter=1000, verb=False):
     for i in range(m):
         cells = (times == t[i])
         n[i] = np.sum(cells)
-        a[i], b[i] = estim_gamma(x[cells])
+        a[i], b[i] = estim_gamma_poisson(x[cells])
     b = np.mean(b)
     # Newton-like method
     k, c = 0, 0
@@ -75,12 +81,27 @@ def infer_kinetics(x, times, tol=1e-4, max_iter=1000, verb=False):
                 d = n[i]*(log(b)-log(b+1)-psi(a[i])) + p0
                 h = p1 - n[i]*polygamma(1, a[i])
                 da[i] = -d/h
-        a = a + da
-        b = np.sum(n*a)/sx
+        anew = a + da
+        if np.sum(anew < 0) == 0: a[:] = anew
+        else:
+            max_test = 5
+            test = 0
+            da *= 0.5
+            while (np.sum(a + da < 0) > 0) and (test < max_test):
+                da *= 0.5
+                test += 1
+            if test < max_test: a[:] = a + da
+            else: print('Warning: parameter a not improved')
+        if np.sum(a == 0) == 0:
+            b = np.sum(n*a)/sx
+        else: b = 1
         c = np.max(np.abs(da))
         k += 1
     if (k == max_iter) and (c > tol): print('Warning: bad convergence')
     if verb: print('Estimation done in {} iterations'.format(k))
+    if np.sum(a < 0) > 0: print('WARNING: a < 0')
+    if b < 0: print('WARNING: b < 0')
+    if np.all(a == 0): print('WARNING: a == 0')
     return a, b
     
 

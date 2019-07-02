@@ -20,25 +20,29 @@ def distance_best(d, threshold, verb=False):
     genes = genes[select]
     if verb:
         n = genes.size - 1
-        print('Number of selected genes: {} (threshold = {})'.format(n,s))
+        print('Selected genes (threshold = {}): '
+            '{} out of {} ({:.2%})'.format(s, n, G-1, n/(G-1)))
     return d, genes
 
-def network_filter(d, threshold, alpha=None, verb=False):
+def network_filter(d, threshold, alpha=None, l1=0.5, verb=False):
     """
     Compute a sparse matrix f by keeping only the most likely links,
     with f[i,j] = 1 denoting the possibility of interaction i -> j.
     """
     T, G = d.shape
     dnew, genes = distance_best(d, threshold, verb=verb)
-    fnew = score_matrix(dnew, alpha=alpha, verb=verb)
-    # f = sparse.dok_matrix((G,G), dtype='uint')
+    fnew = score_matrix(dnew, alpha=alpha, l1=l1, verb=verb)
     f = sparse.dok_matrix((G,G))
+    # f = sparse.dok_matrix((G,G), dtype='uint')
     I, J = fnew.nonzero()
     for i, j in zip(I,J):
         f[genes[i],genes[j]] = fnew[i,j]
+        # f[genes[i],genes[j]] = 1
     if verb:
         n = fnew.count_nonzero()
-        print('Number of possible interactions: {}'.format(n))
+        n0 = G*(G-1)
+        print('Number of possible interactions: {} '
+            'out of {} ({:.5%})'.format(n, n0, n/n0))
     return f.asformat('csc')
 
 # OPTION 2: mechanistic method

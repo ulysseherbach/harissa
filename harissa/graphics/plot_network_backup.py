@@ -88,26 +88,27 @@ def graph_layout(v, e, width, height, tol=None, root=False, verb=False):
 
 
 # Plotting functions
-def node(k, ax, p, name, scale=1, color=None, fontsize=None):
+def node(k, ax, p, name, color=None, fontsize=None):
     if color is None: color = '#F2F2F2'
-    if fontsize is None: fontsize = 8*scale
-    r = 0.1 * scale
-    x, y = p[k,0] * scale, p[k,1] * scale
-    # circle0 = plt.Circle((x, y), radius=r, color=color, zorder=2)
-    # ax.add_artist(circle0)
+    if fontsize is None: fontsize = 8
+    r = 0.1
+    x, y = p[k,0], p[k,1]
+    circle0 = plt.Circle((x, y), radius=r, color=color)
+    circle0.zorder=2
+    ax.add_artist(circle0)
     if k != 0:
         # circle0 = plt.Circle((x, y), radius=r, color=color, zorder=2)
         # ax.add_artist(circle0)
         circle1 = plt.Circle((x, y), radius=r, fill=False,
-            color='lightgray', lw=1*scale, zorder=3)
+            color='lightgray', lw=1, zorder=3)
         ax.add_artist(circle1)
-        ax.text(x, y - 0.007*scale, name, color='gray', fontsize=fontsize,
-            zorder=4, horizontalalignment='center', verticalalignment='center')
+        ax.text(x, y - 0.007, name, color='gray', fontsize=fontsize, zorder=4,
+            horizontalalignment='center', verticalalignment='center')
     else:
         # circle1 = plt.Circle((x, y), radius=r, fill=False,
             # color='darkgray', lw=1, zorder=3)
         circle1 = plt.Circle((x, y), radius=r, fill=False,
-            color='lightgray', lw=1*scale, zorder=3)
+            color='lightgray', lw=1, zorder=3)
         ax.add_artist(circle1)
 
 # def link(k1, k2, ax, p, weight):
@@ -146,39 +147,39 @@ def node(k, ax, p, name, scale=1, color=None, fontsize=None):
 #         head.zorder = 0
 #         ax.add_artist(head)
 
-def link(k1, k2, ax, p, weight, bend=0, scale=1):
+def link(k1, k2, ax, p, weight, bend=0):
     # Node coordinates
-    x1, y1 = p[k1,0]*scale, p[k1,1]*scale
-    x2, y2 = p[k2,0]*scale, p[k2,1]*scale
+    x1, y1 = p[k1,0], p[k1,1]
+    x2, y2 = p[k2,0], p[k2,1]
 
     # Case 1: activation
     if weight > 0:
-        style = ArrowStyle('Simple', tail_width=1.1*scale,
-            head_width=3.5*scale, head_length=5*scale)
+        style = ArrowStyle('Simple', tail_width=1.1,
+            head_width=3.5, head_length=5)
         arrow = FancyArrowPatch((x1,y1), (x2,y2), arrowstyle=style,
-        shrinkA=9*scale, shrinkB=9*scale, fc=activ, lw=0, zorder=0,
+        shrinkA=9, shrinkB=9, fc=activ, lw=0, zorder=0,
         connectionstyle='arc3,rad={}'.format(bend))
         ax.add_artist(arrow)
 
     # Case 2: inhibition
     if weight < 0:
-        style = ArrowStyle('Simple', tail_width=1.1*scale,
-            head_width=0, head_length=1e-9*scale)
+        style = ArrowStyle('Simple', tail_width=1.1,
+            head_width=0, head_length=1e-9)
         arrow = FancyArrowPatch((x1,y1), (x2,y2), arrowstyle=style,
-        shrinkA=9*scale, shrinkB=9*scale, fc=inhib, lw=0, zorder=0,
+        shrinkA=9, shrinkB=9, fc=inhib, lw=0, zorder=0,
         connectionstyle='arc3,rad={}'.format(bend))
         ax.add_artist(arrow)
 
         r = 0.125
         u = p[k2] - p[k1]
         u0 = u/np.sqrt(np.sum(u**2))
-        x0 = (p[k1,0] + r*u0[0])*scale
-        y0 = (p[k1,1] + r*u0[1])*scale
-        dx = (u[0] - 2*r*u0[0])*scale
-        dy = (u[1] - 2*r*u0[1])*scale
+        x0 = p[k1,0] + r*u0[0]
+        y0 = p[k1,1] + r*u0[1]
+        dx = u[0] - 2*r*u0[0]
+        dy = u[1] - 2*r*u0[1]
 
-        h_width = 0.07*scale
-        h_height = 0.015*scale
+        h_width = 0.07
+        h_height = 0.015
         x1, y1 = x0 + dx, y0 + dy
         d = np.sqrt(dx**2 + dy**2)
         u = np.array([dx, dy])/d
@@ -275,49 +276,41 @@ def link_auto(k, ax, p, weight, v=None):
 
 
 # Main function
-def plot_network(inter, width=1, height=1, scale=1, names=None, vdict=None,
-    tol=None, root=False, axes=None, file=None, verb=False):
+def plot_network(inter, width=1, height=1, vdict=None,
+    tol=None, root=False, file=None, verb=False):
     """
     Plot a network.
     """
-    G, G = inter.shape
+    n, n = inter.shape
     w, h = width/2.54, height/2.54 # Centimeters
-    if names is None: name = ['{}'.format(k) for k in range(G)]
     if vdict is None: vdict = {}
 
     # Compute layout
-    v = list(range(G))
+    v = list(range(n))
     e = list(zip(*inter.nonzero()))
     p = graph_layout(v, e, w, h, tol=tol, root=root, verb=verb)
 
     # Draw layout
-    if axes is None:
-        fig = plt.figure(figsize=(w,h), dpi=100, frameon=False)
-        plt.axes([0,0,1,1])
-        ax = fig.gca()
-    else:
-        ax = axes
-        fig = plt.gcf()
-        size = fig.get_size_inches()
-        w, h = size[0], size[1]
+    fig = plt.figure(figsize=(w,h), dpi=100, frameon=False)
+    plt.axes([0,0,1,1])
+    ax = fig.gca()
     ax.axis('off')
     ax.axis('equal')
-    pos = ax.get_position()
-    plt.xlim([0, w*pos.width])
-    plt.ylim([0, h*pos.height])
-    scale = scale * np.min([pos.width,pos.height])
+    plt.xlim([0, w])
+    plt.ylim([0, h])
 
     # Draw nodes
     I, J = inter.nonzero()
     for k in set(I) | set(J):
-        node(k, ax, p, name[k], scale)
+        name = '{}'.format(k)
+        node(k, ax, p, name)
 
     # Draw links
     for k1, k2 in e:
         weight = inter[k1,k2]
         if k1 != k2:
             if (k2, k1) in e: link(k1, k2, ax, p, weight, bend=0.2)
-            else: link(k1, k2, ax, p, weight, bend=0, scale=scale)
+            else: link(k1, k2, ax, p, weight, bend=0)
         else:
             v = vdict.get(k1)
             if v is None:
@@ -333,12 +326,13 @@ def plot_network(inter, width=1, height=1, scale=1, names=None, vdict=None,
             else: v = np.array([0,1])
             link_auto(k1, ax, p, weight, v)
     if file is None: file = 'network.pdf'
-    if axes is None: fig.savefig(file, dpi=100, bbox_inches=0, frameon=False)
+    fig.savefig(file, dpi=100, bbox_inches=0, frameon=False)
+    plt.close()
 
 
 # Tests
 if __name__ == '__main__':
-    # np.random.seed(0)
+    np.random.seed(0)
 
     # Simple graph example
     # v = list(range(10))
@@ -347,35 +341,24 @@ if __name__ == '__main__':
     # e = [(0,3),(0,5)]
     # e = []
 
-    # import sys; sys.path.append('../../../Harissa')
-    # from harissa.generator import tree
+    import sys; sys.path.append('../../../Harissa')
+    from harissa.generator import tree
 
-    # n = 10
-    # w = np.ones((n+1,n+1))
-    # # w[1] = 10
-    # # w[2] = 10
-    # basal, inter = tree(n, weight=w)
-    # np.random.seed(0)
-    # # basal, inter = cascade(n)
-    # inter[2,8] = -1
-    # inter[8,2] = 1
-    # inter[3,5] = -1
-    # inter[5,3] = -1
-    # # inter[10,10] = 1
-    # for i in range(1,n+1):
-    #     inter[i,i] = 1
+    n = 10
+    w = np.ones((n+1,n+1))
+    # w[1] = 10
+    # w[2] = 10
+    basal, inter = tree(n, weight=w)
+    np.random.seed(0)
+    # basal, inter = cascade(n)
+    inter[2,8] = -1
+    inter[8,2] = 1
+    inter[3,5] = -1
+    inter[5,3] = -1
+    # inter[10,10] = 1
+    for i in range(1,n+1):
+        inter[i,i] = 1
 
-    # # vdict = {1:(-1,-0), 2:(1,0.6), 3:(-1,0.6), 5:(-1,0.2)}
-    # plot_network(inter, width=10, height=10, vdict=None,
-    #     tol=1e-3, root=True, verb=False)
-
-    np.random.seed(5)
-    from scipy import sparse
-    n = 4
-    inter = sparse.dok_matrix((n+1,n+1))
-    inter[0,1] = 1
-    inter[1,2] = 1
-    inter[1,3] = 1
-    inter[3,4] = 1
-    inter[4,1] = -1
-    plot_network(inter, width=4, height=4)
+    # vdict = {1:(-1,-0), 2:(1,0.6), 3:(-1,0.6), 5:(-1,0.2)}
+    plot_network(inter, width=10, height=10, vdict=None,
+        tol=1e-3, root=True, verb=False)

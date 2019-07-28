@@ -276,7 +276,8 @@ def link_auto(k, ax, p, weight, v=None):
 
 # Main function
 def plot_network(inter, width=1, height=1, scale=1, names=None, vdict=None,
-    tol=None, root=False, axes=None, file=None, verb=False):
+    tol=None, root=False, axes=None, layout=None, nodes=None, n0=True,
+    file=None, verb=False):
     """
     Plot a network.
     """
@@ -288,18 +289,23 @@ def plot_network(inter, width=1, height=1, scale=1, names=None, vdict=None,
     # Compute layout
     v = list(range(G))
     e = list(zip(*inter.nonzero()))
-    p = graph_layout(v, e, w, h, tol=tol, root=root, verb=verb)
+    if layout is None:
+        p = graph_layout(v, e, w, h, tol=tol, root=root, verb=verb)
+    else: p = layout
 
     # Draw layout
     if axes is None:
         fig = plt.figure(figsize=(w,h), dpi=100, frameon=False)
         plt.axes([0,0,1,1])
         ax = fig.gca()
+        I, J = inter.nonzero()
     else:
         ax = axes
         fig = plt.gcf()
         size = fig.get_size_inches()
         w, h = size[0], size[1]
+        if nodes is None: I, J = inter.nonzero()
+        else: I, J = nodes, nodes
     ax.axis('off')
     ax.axis('equal')
     pos = ax.get_position()
@@ -308,7 +314,8 @@ def plot_network(inter, width=1, height=1, scale=1, names=None, vdict=None,
     scale = scale * np.min([pos.width,pos.height])
 
     # Draw nodes
-    I, J = inter.nonzero()
+    I, J = set(I), set(J)
+    if not n0: I, J = I-{0}, J-{0}
     for k in set(I) | set(J):
         node(k, ax, p, name[k], scale)
 

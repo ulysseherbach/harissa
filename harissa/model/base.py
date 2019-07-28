@@ -245,7 +245,7 @@ class NetworkModel:
 
         if verb:
             print('Filtering mask:')
-            print(mask)
+            print(sparse.csc_matrix(mask))
 
         # Inference procedure
         y, q = inference(x, inter, basal, a, b, c, mask, l=l, tol=tol,

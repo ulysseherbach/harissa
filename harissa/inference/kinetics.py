@@ -46,7 +46,7 @@ def transform(x):
         a, b = np.abs(a), np.abs(b)
     return (a + x)/(b + 1)
 
-def infer_kinetics(x, times, tol=1e-4, max_iter=1000, verb=False):
+def infer_kinetics(x, times, tol=1e-5, max_iter=100, verb=False):
     """
     Infer parameters a[0], ..., a[m-1] and b of a Gamma-Poisson model
     with time-dependant a and constant b for a given gene at m time points.
@@ -97,11 +97,14 @@ def infer_kinetics(x, times, tol=1e-4, max_iter=1000, verb=False):
         else: b = 1
         c = np.max(np.abs(da))
         k += 1
-    if (k == max_iter) and (c > tol): print('Warning: bad convergence')
-    if verb: print('Estimation done in {} iterations'.format(k))
+    if (k == max_iter) and (c > tol):
+        # print('Warning: bad convergence (b = {})'.format(b))
+        a, b = a/b, 1
+    # if verb: print('Estimation done in {} iterations'.format(k))
     if np.sum(a < 0) > 0: print('WARNING: a < 0')
     if b < 0: print('WARNING: b < 0')
     if np.all(a == 0): print('WARNING: a == 0')
+    # if k > 20 and np.max(a/b) > 2: print(k, np.max(a/b))
     return a, b
     
 

@@ -27,10 +27,9 @@ Parameters
         mask[i,j] = +1 (resp. -1) if i -> j (resp. i -| j), otherwise 0.
 """
 import numpy as np
-from numpy import log
+from numpy import exp, log
 from scipy.special import gammaln, psi
 from scipy.optimize import minimize
-from scipy.special import expit
 
 # Fused penalization strength
 lf = 1
@@ -73,12 +72,22 @@ def grad_penalization(inter, times, l):
     #         gradp[t] += (inter[t] - inter[t0])/dt[k-1]
     return {t: l * gradp[t] for t in times}
 
+def stabilize(phi):
+    """
+    Prevent phi from taking too high or low values.
+    """
+    pmin, pmax = 1e-100, 1e+100
+    phi[phi < pmin] = pmin
+    phi[phi > pmax] = pmax
+
 def obj_cell(x, y, inter, basal, a, c, d):
     """
     Objective function to be maximized in y (one cell).
     """
+    phi = exp(basal + y @ inter)
+    stabilize(phi)
     # Remove the stimulus
-    sigma = expit(basal + y @ inter)[1:]
+    sigma = phi[1:] / (phi[1:] + 1)
     x, y = x[1:], y[1:]
     a, c, d = a[1:], c[1:], d[1:]
     # Compute the log-likelihood
@@ -92,8 +101,10 @@ def obj_t(x, y, inter, basal, a, c, d):
     """
     Basic objective function (all cells at one time point).
     """
+    phi = exp(basal + y @ inter)
+    stabilize(phi)
     # Remove the stimulus
-    sigma = expit(basal + y @ inter)[:,1:]
+    sigma = phi[:,1:] / (phi[:,1:] + 1)
     x, y = x[:,1:], y[:,1:]
     a, c, d = a[1:], c[1:], d[1:]
     # Compute the log-likelihood
@@ -123,7 +134,10 @@ def obj_t_gene(i, y, inter, basal, c):
     """
     Objective function for gene i (all cells at one time point).
     """
-    sigma = expit(basal + y @ inter)
+    phi = exp(basal + y @ inter)
+    stabilize(phi)
+    # Remove the stimulus
+    sigma = phi / (phi + 1)
     # Compute the log-likelihood
     csigma = c * sigma
     q = (csigma-1)*log(y[:,i]) + log(c)*csigma - gammaln(csigma)
@@ -148,16 +162,17 @@ def grad_y_obj_cell(x, y, inter, basal, a, c, d):
     """
     Objective function gradient with respect to y (one cell).
     """
+    phi = exp(basal + y @ inter)
+    stabilize(phi)
     # Remove the stimulus
-    sigma = expit(basal + y @ inter)[1:]
+    sigma = phi[1:] / (phi[1:] + 1)
+    # if np.min(sigma) == 0: print('Warning: sigma = 0')
     x, y = x[1:], y[1:]
     a, c, d = a[1:], c[1:], d[1:]
-    # if np.min(sigma) == 0: print('Warning: sigma = 0')
     # Compute the log-likelihood gradient
     ay = a * y
     csigma = c * sigma
-    # Take care of stabilizing the digamma function
-    u = (1-sigma) * (csigma*log(c*y) - csigma*psi(csigma+1) + 1)
+    u = sigma * (1-sigma) * c * (log(c*y) - psi(csigma))
     v = (csigma-1)/y - c + a*(d + psi(ay+x) - psi(ay))
     # Restore the stimulus
     u, v = np.append(0,u), np.append(0,v)
@@ -169,11 +184,12 @@ def u_t_gene(i, y, inter, basal, c):
     """
     Compute the pivotal vector u for gene i for all cells at one time point.
     """
-    sigma = expit(basal + y @ inter)
+    phi = exp(basal + y @ inter)
+    stabilize(phi)
+    sigma = phi / (phi + 1)
     # Compute the log-likelihood
     csigma = c * sigma
-    # Take care of stabilizing the digamma function
-    u = (1-sigma) * (csigma*log(c*y[:,i]) - csigma*psi(csigma+1) + 1)
+    u = sigma * (1-sigma) * c * (log(c*y[:,i]) - psi(csigma))
     return u
 
 def grad_theta_gene(i, x, y, inter, basal, c, mask, l):

@@ -17,7 +17,7 @@ def plot_proteins(y, g1=1, g2=2, file=None):
     plt.ylim(ymin,ymax)
     plt.axis('equal')
     if file is None: file = 'Proteins'
-    path = file + '.pdf'
+    path = file
     fig.savefig(path, dpi=100, bbox_inches='tight', frameon=False)
     plt.close()
     
@@ -60,9 +60,9 @@ def plot_xy(x, y, g1=1, g2=2, time=True, file=None):
     ax1.set_title('mRNA levels')
     # ax1.set_title('mRNA levels (data)')
     if time: ax1.legend()
-    ymax = np.max(y[:,[i,j]])
-    ax2.set_xlim(0,np.max([1,ymax]))
-    ax2.set_ylim(0,np.max([1,ymax]))
+    ymax = np.max([1,np.max(y[:,[i,j]])])
+    ax2.set_xlim(0,ymax)
+    ax2.set_ylim(0,ymax)
     ax2.set_aspect('equal', 'box')
     ax2.set_xlabel('Gene {}'.format(g1))
     ax2.set_ylabel('Gene {}'.format(g2))
@@ -71,6 +71,6 @@ def plot_xy(x, y, g1=1, g2=2, time=True, file=None):
     if time: ax2.legend()
     # Save figure
     if file is None: file = 'XY'
-    path = file + '.pdf'
+    path = file
     fig.savefig(path, dpi=100, bbox_inches='tight', frameon=False)
     plt.close()

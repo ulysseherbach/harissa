@@ -62,7 +62,7 @@ def graph_layout(v, e, width, height, tol=None, root=False, verb=False):
     xv and yv are coordinates of vertex v, both within [0,1].
     """
     if tol is None: tol = 1e-3
-    max_iter = 10000
+    max_iter = 1000
     n = len(v)
     xmin, ymin = 1/n, 1/n
     xmax, ymax = (1 - 1/n)*width, (1 - 1/n)*height
@@ -86,6 +86,13 @@ def graph_layout(v, e, width, height, tol=None, root=False, verb=False):
     elif verb: print('Converged in {} iterations'.format(k))
     return p
 
+def circ_layout(n, width, height):
+    """Circular graph layout"""
+    p = np.zeros((n,2))
+    a = np.pi/2 + 2 * np.pi * np.linspace(0, 1, n+1)[:n] - 0.000
+    p[:,0] = (0.5 * (1 - 2/6) * np.cos(a) + 1/2) * width
+    p[:,1] = (0.5 * (1 - 2/6) * np.sin(a) + 1/2) * height
+    return p
 
 # Plotting functions
 def node(k, ax, p, name, scale=1, color=None, fontsize=None):
@@ -109,42 +116,6 @@ def node(k, ax, p, name, scale=1, color=None, fontsize=None):
         circle1 = plt.Circle((x, y), radius=r, fill=False,
             color='lightgray', lw=1*scale, zorder=3)
         ax.add_artist(circle1)
-
-# def link(k1, k2, ax, p, weight):
-#     l = 0.015
-#     r = 0.125
-#     u = p[k2] - p[k1]
-#     u0 = u/np.sqrt(np.sum(u**2))
-#     x0 = p[k1,0] + r*u0[0]
-#     y0 = p[k1,1] + r*u0[1]
-#     dx = u[0] - 2*r*u0[0]
-#     dy = u[1] - 2*r*u0[1]
-#     # Case 1: activation
-#     if weight > 0:
-#         arrow = FancyArrow(x0, y0, dx, dy, width=l, lw=0, color=activ,
-#             length_includes_head=True, head_width=0.05, head_length=None)
-#         arrow.zorder = 0
-#         ax.add_artist(arrow)
-#     # Case 2: inhibition
-#     elif weight < 0:
-#         arrow = FancyArrow(x0, y0, dx, dy, width=l, lw=0, color=inhib,
-#             length_includes_head=True, head_width=0, head_length=0)
-#         arrow.zorder = 0
-#         ax.add_artist(arrow)
-#         h_width = 0.07
-#         h_height = l
-#         x1, y1 = x0 + dx, y0 + dy
-#         d = np.sqrt(dx**2 + dy**2)
-#         u = np.array([dx, dy])/d
-#         v = np.array([dy,-dx])/d
-#         x2 = x1 + 0.2*h_height*u[0] + 0.5*h_width*v[0]
-#         y2 = y1 + 0.2*h_height*u[1] + 0.5*h_width*v[1]
-#         if v[0] > 0: angle = (180/np.pi)*np.arctan(v[1]/v[0]) - 180
-#         elif v[0] < 0: angle = (180/np.pi)*np.arctan(v[1]/v[0])
-#         else: angle = 90
-#         head = Rectangle((x2,y2), h_width, h_height, angle=angle, fc=inhib)
-#         head.zorder = 0
-#         ax.add_artist(head)
 
 def link(k1, k2, ax, p, weight, bend=0, scale=1):
     # Node coordinates
@@ -189,7 +160,7 @@ def link(k1, k2, ax, p, weight, bend=0, scale=1):
 
         if v[0] > 0: angle = (180/np.pi)*np.arctan(v[1]/v[0]) - 180
         elif v[0] < 0: angle = (180/np.pi)*np.arctan(v[1]/v[0])
-        else: angle = 90
+        else: angle = np.sign(u[0]) * 90
 
         angle += np.tanh(bend) * 90
         theta = np.tanh(bend) * (np.pi/2)
@@ -201,9 +172,9 @@ def link(k1, k2, ax, p, weight, bend=0, scale=1):
             angle=angle, fc=inhib, zorder=0)
         ax.add_artist(head)
 
-def link_auto(k, ax, p, weight, v=None):
+def link_auto(k, ax, p, weight, v=None, scale=1):
     # Node coordinates
-    x0, y0 = p[k,0], p[k,1]
+    x0, y0 = p[k,0]*scale, p[k,1]*scale
 
     # Orientation
     if v is None:
@@ -217,23 +188,23 @@ def link_auto(k, ax, p, weight, v=None):
     angle2 = 300 + angle0
     theta = angle0 * (np.pi/180)
 
-    x, y = x0 + 0.145, y0
+    x, y = x0 + 0.145*scale, y0
     x1 = x0 + np.cos(theta)*(x-x0) - np.sin(theta)*(y-y0)
     y1 = y0 + np.sin(theta)*(x-x0) + np.cos(theta)*(y-y0)
 
     # Loop diameter
-    d = 0.15
+    d = 0.15*scale
 
     # Case 1: activation
     if weight > 0:
         c = activ
         arc = Arc((x1,y1), d, d, angle=180, theta1=angle1, theta2=angle2-30,
-        lw=1.1, color=c, zorder=0)
+        lw=1.1*scale, color=c, zorder=0)
         ax.add_artist(arc)
 
         # Activation head
-        head_width = 0.045
-        head_length = 0.065
+        head_width = 0.045*scale
+        head_length = 0.065*scale
 
         angle = angle2 - 180 - 30
         theta = angle * (np.pi/180)
@@ -254,12 +225,12 @@ def link_auto(k, ax, p, weight, v=None):
     if weight < 0:
         c = inhib
         arc = Arc((x1,y1), d, d, angle=180, theta1=angle1, theta2=angle2-2,
-        lw=1.1, color=c, zorder=0)
+        lw=1.1*scale, color=c, zorder=0)
         ax.add_artist(arc)
 
         # Inhibition head
-        width = 0.06
-        height = 0.015
+        width = 0.06*scale
+        height = 0.015*scale
 
         angle = angle2 - 180 - 2
         theta = angle * (np.pi/180)
@@ -283,7 +254,7 @@ def plot_network(inter, width=1, height=1, scale=1, names=None, vdict=None,
     """
     G, G = inter.shape
     w, h = width/2.54, height/2.54 # Centimeters
-    if names is None: name = ['{}'.format(k) for k in range(G)]
+    if names is None: names = ['{}'.format(k) for k in range(G)]
     if vdict is None: vdict = {}
 
     # Compute layout
@@ -299,6 +270,7 @@ def plot_network(inter, width=1, height=1, scale=1, names=None, vdict=None,
         plt.axes([0,0,1,1])
         ax = fig.gca()
         I, J = inter.nonzero()
+        ax.axis('off')
     else:
         ax = axes
         fig = plt.gcf()
@@ -306,7 +278,6 @@ def plot_network(inter, width=1, height=1, scale=1, names=None, vdict=None,
         w, h = size[0], size[1]
         if nodes is None: I, J = inter.nonzero()
         else: I, J = nodes, nodes
-    ax.axis('off')
     ax.axis('equal')
     pos = ax.get_position()
     plt.xlim([0, w*pos.width])
@@ -314,38 +285,46 @@ def plot_network(inter, width=1, height=1, scale=1, names=None, vdict=None,
     scale = scale * np.min([pos.width,pos.height])
 
     # Draw nodes
-    I, J = set(I), set(J)
-    if not n0: I, J = I-{0}, J-{0}
-    for k in set(I) | set(J):
-        node(k, ax, p, name[k], scale)
+    # I, J = set(I), set(J)
+    # if not n0: I, J = I-{0}, J-{0}
+    # for k in I | J:
+    #     node(k, ax, p, names[k], scale)
+    for k in range(G):
+        node(k, ax, p, names[k], scale)
 
     # Draw links
     for k1, k2 in e:
         weight = inter[k1,k2]
         if k1 != k2:
-            if (k2, k1) in e: link(k1, k2, ax, p, weight, bend=0.2)
-            else: link(k1, k2, ax, p, weight, bend=0, scale=scale)
+            if (k2, k1) in e: link(k1, k2, ax, p, weight, 0.1, scale)
+            else: link(k1, k2, ax, p, weight, 0, scale)
         else:
             v = vdict.get(k1)
             if v is None:
                 b, c = 0, 0
-                for k in range(n):
+                for k in range(G):
                     if (k != k1) and (((k,k1) in e) or ((k1, k) in e)):
                         b += p[k]
                         c += 1
+                if c == 0:
+                    b, c = 0, 0
+                    for k in I | J:
+                        if (k != k1):
+                            b += p[k]
+                            c += 1
                 v = p[k1] - b/c
             else: v = np.array(v)
             d = np.sqrt(np.sum(v**2))
             if d > 0: v = v/d
             else: v = np.array([0,1])
-            link_auto(k1, ax, p, weight, v)
+            link_auto(k1, ax, p, weight, v, scale)
     if file is None: file = 'network.pdf'
     if axes is None: fig.savefig(file, dpi=100, bbox_inches=0, frameon=False)
 
 
 # Tests
 if __name__ == '__main__':
-    # np.random.seed(0)
+    np.random.seed(0)
 
     # Simple graph example
     # v = list(range(10))
@@ -376,13 +355,22 @@ if __name__ == '__main__':
     # plot_network(inter, width=10, height=10, vdict=None,
     #     tol=1e-3, root=True, verb=False)
 
-    np.random.seed(5)
-    from scipy import sparse
-    n = 4
-    inter = sparse.dok_matrix((n+1,n+1))
-    inter[0,1] = 1
-    inter[1,2] = 1
-    inter[1,3] = 1
-    inter[3,4] = 1
-    inter[4,1] = -1
-    plot_network(inter, width=4, height=4)
+    # Energy-based layout
+    # np.random.seed(5)
+    # from scipy import sparse
+    # n = 4
+    # inter = sparse.dok_matrix((n+1,n+1))
+    # inter[0,1] = 1
+    # inter[1,2] = 1
+    # inter[1,3] = 1
+    # inter[3,4] = 1
+    # inter[4,1] = -1
+    # plot_network(inter, width=4, height=4)
+
+    # Circular layout
+    # n = 7
+    # # inter = np.random.binomial(1, 0.2, size=(n+1,n+1))
+    # inter = np.diag(np.ones(n+1))
+    # inter += -2*np.random.binomial(1, 0.1, size=(n+1,n+1))
+    # p = circ_layout(n+1, 4/2.54, 4/2.54)
+    # plot_network(inter, width=4, height=4, layout=p)

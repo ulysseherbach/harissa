@@ -1,13 +1,13 @@
 """
 Data histograms and model fit
 """
-from harissa.inference.kinetics import infer_kinetics
+from ..inference.kinetics import infer_kinetics
 import numpy as np
 from numpy import exp, log
 from scipy.special import gammaln
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import matplotlib.ticker as ticker
+# import matplotlib.ticker as ticker
 
 alpha = 1/2 # Transformation mRNA**alpha in plots
 
@@ -28,29 +28,34 @@ def distribution(x, a, b):
 
 def prep_figure(ax):
     """Graphic options for histograms"""
-    ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
-    ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
-    ax.ticklabel_format(scilimits=(0, 0))
+    # ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
+    # ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
+    # ax.ticklabel_format(scilimits=(0, 0))
     ax.tick_params(labelsize = 10, left = False, right = False)
     ax.set_yticklabels([])
 
-def plot_data(data, file=None, genes=None):
-    """Plot the histogram of each gene."""
+def plot_data(data, path=None, genes=None, ranks=False):
+    """Plot the time-varying histogram of each gene."""
+    if genes is None:
+        G = data[0].size - 1
+        genedict = {i+1: 'Gene {}'.format(i+1) for i in range(G)}
+    else:
+        G = genes[:,0].size
+        genedict = {int(genes[i,0]): genes[i,1] for i in range(G)}
+    # Time points
     t = np.sort(list(set(data[:,0])))
-    G = data[0].size # Number of genes
-    T = t.size # Number of time-points
-    if genes is None: genes = range(1,G)
-    if type(genes[0]) is str:
-        genedict = {i+1: g for (i,g) in enumerate(genes)}
-    else: genedict = {i: 'Gene {}'.format(i) for i in genes}
+    T = t.size
+    rank = 0
+    # Plotting routine
     for idgene, gene in genedict.items():
-        print('Plotting gene {} ({})...'.format(idgene,gene))
+        print('Plotting gene {} ({})...'.format(idgene, gene))
+        rank += 1
         times = data[:,0]
-        X = data[:,idgene]
+        X = np.asarray(data[:,idgene], dtype='int')
         a, b = infer_kinetics(X, times)
         xmax = np.max(X)
         ### Set up the figure for the gene
-        fig = plt.figure(figsize=(10,T*10/6), dpi=100)
+        fig = plt.figure(figsize=(10,T*10/6))
         gs = gridspec.GridSpec(T,3)
         gs.update(hspace = 0.5)
         for i in range(T):
@@ -59,13 +64,12 @@ def plot_data(data, file=None, genes=None):
             ### Plot the mRNA molecule numbers
             ax = fig.add_subplot(gs[i,0])
             if (i == 0): ax.set_title(gene)
-            bins = np.arange(0,xmax+2)
-            hist, bins = np.histogram(Xt, bins)
             hx = np.arange(0,xmax+1)
+            hist = np.bincount(Xt, minlength=xmax+1)
             hy = hist/np.sum(hist)
             ax.plot(hx, hy, linewidth=1.5, color='lightgray')
             prep_figure(ax)
-            ax.set_xlim(0,1.05*xmax)
+            ax.set_xlim(0,xmax)
             ax.set_ylim(0,1.05*np.max(hy))
             # Fitting negative binomial distributions
             x = np.arange(0,xmax+1)
@@ -77,7 +81,7 @@ def plot_data(data, file=None, genes=None):
             if (i == 0): ax.set_title(gene+lp)
             ax.plot(hx**alpha, hy, linewidth=1.5, color='lightgray')
             prep_figure(ax)
-            ax.set_xlim(0,1.05*xmax**alpha)
+            ax.set_xlim(0,xmax**alpha)
             ax.set_ylim(0,1.05*np.max(hy))
             ax.plot(x**alpha, y, linewidth=1.5, color='red', label='Model')
             ### Plot the repartition functions of mRNA**alpha
@@ -91,7 +95,8 @@ def plot_data(data, file=None, genes=None):
             rx = np.append(x**alpha, (xmax+1)**alpha)
             ry = np.append(y[0], np.cumsum(y))
             ax.step(rx, ry, linewidth=1.5, color='red', label='Model')
-        if file is None: file = 'Histo'
-        path = file + '_{}.pdf'.format(idgene)
-        fig.savefig(path, dpi=100, bbox_inches='tight', frameon=False)
+        if path is None: path = ''
+        if ranks: file = path + 'Histo_{}_{}.pdf'.format(rank, idgene)
+        else: file = path + 'Histo_{}.pdf'.format(idgene)
+        fig.savefig(file, bbox_inches='tight', frameon=False)
         plt.close()

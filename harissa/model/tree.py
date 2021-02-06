@@ -1,3 +1,4 @@
+"""Generate random trees"""
 import numpy as np
 from scipy import sparse
 
@@ -21,7 +22,7 @@ def loop_erasure(path):
 def random_tree(a):
     """
     Generate a random spanning tree rooted in node 0 from the uniform
-    distribution with weights given by a (using Wilson's method).
+    distribution with weights given by matrix a (using Wilson's method).
     """
     n = a[0].size
     tree = [[] for i in range(n)]
@@ -46,7 +47,7 @@ def random_tree(a):
 # Main function
 def tree(n_genes, weight=None):
     """
-    Generate a random tree network model.
+    Generate a random tree-like network model.
     Note: weight[i,j] is the probability weight of link (i) -> (j).
     """
     G = n_genes + 1

@@ -1,3 +1,4 @@
+"""Generate cascade networks"""
 import numpy as np
 from scipy import sparse
 

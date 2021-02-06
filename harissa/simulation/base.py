@@ -7,15 +7,16 @@ class Simulation:
     """
     Basic object to store simulations
     """
-    def __init__(self, genes, t, m, p):
-        self.genes = genes # Gene indices
+    def __init__(self, t, m, p):
         self.t = t # Time points
         self.m = m # mRNAs
         self.p = p # Proteins
     
-    def plot(self, file=None):
+    def plot(self, genes=None, file=None):
         from ..graphics import plot_sim
-        plot_sim(self.t, self.m, self.p, self.genes, file=file)
+        G = self.m[0].size + 1
+        if genes is None: genes = list(range(1,G))
+        plot_sim(self.t, self.m, self.p, genes, file)
 
     def plot_xy(self, g1=1, g2=2, time=False, file=None):
         from ..graphics import plot_xy as plot

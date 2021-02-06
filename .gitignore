@@ -1,4 +1,4 @@
-# OS junk files
+# OS files
 *.DS_Store
 
 # Other files
@@ -8,6 +8,5 @@
 *.html
 *.rtf
 
-# Working files
-main.py
-harissa/hartree
+# To-do list
+todo.txt

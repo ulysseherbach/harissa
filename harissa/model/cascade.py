@@ -1,6 +1,5 @@
 """Generate cascade networks"""
 import numpy as np
-from scipy import sparse
 
 def cascade(n_genes):
     """
@@ -8,7 +7,7 @@ def cascade(n_genes):
     """
     G = n_genes + 1
     basal = np.zeros(G)
-    inter = sparse.dok_matrix((G,G))
+    inter = np.zeros((G,G))
     basal[1:] = -5 # Low basal level of downstream genes
     for i in range(n_genes):
         inter[i,i+1] = 10

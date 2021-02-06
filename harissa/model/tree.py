@@ -1,6 +1,5 @@
 """Generate random trees"""
 import numpy as np
-from scipy import sparse
 
 def random_step(state, a):
     """
@@ -61,7 +60,7 @@ def tree(n_genes, weight=None):
     # Generate the network
     tree = random_tree(weight)
     basal = np.zeros(G)
-    inter = sparse.dok_matrix((G,G))
+    inter = np.zeros((G,G))
     basal[1:] = -5
     for i, targets in enumerate(tree):
         for j in targets:

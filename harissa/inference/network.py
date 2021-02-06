@@ -220,7 +220,7 @@ def expectation(x, y, inter, basal, a, c, d, verb=False):
         bounds = [(None,None)] + (G-1) * [(1e-5,None)]
         # options = {'gtol': 1e-1}
         res = minimize(f, p0, method='L-BFGS-B', jac=Df, bounds=bounds,
-            tol=1e-4)
+            tol=1e-5)
         if not res.success: print('Warning, expectation step failed')
         y[k] = res.x
         # if verb: print('Fitted y[{}] in {} iterations'.format(k+1,res.nit))
@@ -266,7 +266,7 @@ def maximization(x, y, inter, basal, a, b, c, mask, sign, l, verb=False):
         # Solve the minimization problem
         # options = {'gtol': 1e-2}
         res = minimize(f, theta0, method='L-BFGS-B', jac=Df, bounds=bounds,
-            tol=1e-4)
+            tol=1e-5)
         theta = res.x
         basal[i] = theta[0]
         for k, t in enumerate(times): inter[t][:,i] = theta[1+k*G:1+(k+1)*G]

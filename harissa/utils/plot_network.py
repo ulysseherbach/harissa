@@ -357,9 +357,8 @@ if __name__ == '__main__':
 
     # Energy-based layout
     # np.random.seed(5)
-    # from scipy import sparse
     # n = 4
-    # inter = sparse.dok_matrix((n+1,n+1))
+    # inter = np.zeros((n+1,n+1))
     # inter[0,1] = 1
     # inter[1,2] = 1
     # inter[1,3] = 1

@@ -2,7 +2,7 @@
 Main class for network inference and simulation
 """
 import numpy as np
-# from scipy import sparse
+from scipy import sparse
 from .cascade import cascade
 from .tree import tree
 from ..inference import inference, infer_kinetics
@@ -124,6 +124,9 @@ class NetworkModel:
         d = self.d
         basal = self.basal
         inter = self.inter
+        # Remove the sparse type if necessary
+        if sparse.issparse(inter):
+            inter = inter.toarray()
         network = BurstyPDMP(a, d, basal, inter)
         # Burnin simulation without stimulus
         if burnin is not None: network.simulation([burnin], verb)
@@ -155,7 +158,10 @@ class NetworkModel:
             a = self.a
             d = self.d
             basal = self.basal
-            inter = self.inter.toarray()
+            inter = self.inter
+            # Remove the sparse type if necessary
+            if sparse.issparse(inter):
+                inter = inter.toarray()
         # Case 2 (filtering): only filtered genes are simulated
         else:
             G = len(v)

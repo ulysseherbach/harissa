@@ -19,4 +19,3 @@ def cascade(n_genes):
 if __name__ == '__main__':
     basal, inter = cascade(5)
     print(inter)
-    

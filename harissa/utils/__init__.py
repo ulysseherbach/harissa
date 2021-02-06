@@ -1,6 +1,6 @@
 """
-harissa.graphics
-----------------
+harissa.utils
+-------------
 
 Some useful plotting routines to visualize results.
 """

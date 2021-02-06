@@ -32,8 +32,11 @@ from scipy.special import gammaln, psi
 from scipy.optimize import minimize
 from scipy.special import expit
 
+# Tolerance parameter for the EM steps
+em_tol = 1e-4
+
 # Fused penalization strength
-lf = 1
+# lf = 1
 
 def penalization(inter, times, l):
     """
@@ -220,7 +223,7 @@ def expectation(x, y, inter, basal, a, c, d, verb=False):
         bounds = [(None,None)] + (G-1) * [(1e-5,None)]
         # options = {'gtol': 1e-1}
         res = minimize(f, p0, method='L-BFGS-B', jac=Df, bounds=bounds,
-            tol=1e-5)
+            tol=em_tol)
         if not res.success: print('Warning, expectation step failed')
         y[k] = res.x
         # if verb: print('Fitted y[{}] in {} iterations'.format(k+1,res.nit))
@@ -266,7 +269,7 @@ def maximization(x, y, inter, basal, a, b, c, mask, sign, l, verb=False):
         # Solve the minimization problem
         # options = {'gtol': 1e-2}
         res = minimize(f, theta0, method='L-BFGS-B', jac=Df, bounds=bounds,
-            tol=1e-5)
+            tol=em_tol)
         theta = res.x
         basal[i] = theta[0]
         for k, t in enumerate(times): inter[t][:,i] = theta[1+k*G:1+(k+1)*G]

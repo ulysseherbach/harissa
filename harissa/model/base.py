@@ -25,7 +25,7 @@ class NetworkModel:
             self.a = np.zeros((3,G))
             self.a[0] = 0 # Minimal Kon rate (normalized)
             self.a[1] = 2 # Maximal Kon rate (normalized)
-            self.a[2] = 0.02 # Constant Koff rate (normalized)
+            self.a[2] = 0.02 # Inverse burst size of mRNA
             # Default degradation rates
             self.d = np.zeros((2,G))
             self.d[0] = np.log(2)/9 # mRNA degradation rates

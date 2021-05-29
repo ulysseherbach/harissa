@@ -8,5 +8,6 @@
 *.html
 *.rtf
 
-# To-do list
+# Working files
 todo.txt
+tests

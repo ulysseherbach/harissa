@@ -83,12 +83,13 @@ def obj_cell(x, y, inter, basal, a, c, d):
     # Remove the stimulus
     sigma = expit(basal + y @ inter)[1:]
     x, y = x[1:], y[1:]
-    a, c, d = a[1:], c[1:], d[1:]
+    a0, a1, c, d = a[0,1:], a[1,1:], c[1:], d[1:]
     # Compute the log-likelihood
-    ay = a * y
-    csigma = c * sigma
+    ay = a1 * y
+    e = a0/a1
+    cxi = c * (e + (1-e)*sigma)
     q = (d*ay + gammaln(ay + x) - gammaln(ay) - c*y
-        + (csigma-1)*log(y) + log(c)*csigma - gammaln(csigma))
+        + (cxi-1)*log(y) + log(c)*cxi - gammaln(cxi))
     return np.sum(q)
 
 def obj_t(x, y, inter, basal, a, c, d):
@@ -98,15 +99,16 @@ def obj_t(x, y, inter, basal, a, c, d):
     # Remove the stimulus
     sigma = expit(basal + y @ inter)[:,1:]
     x, y = x[:,1:], y[:,1:]
-    a, c, d = a[1:], c[1:], d[1:]
+    a0, a1, c, d = a[0,1:], a[1,1:], c[1:], d[1:]
     # Compute the log-likelihood
-    ay = a * y
-    csigma = c * sigma
+    ay = a1 * y
+    e = a0/a1
+    cxi = c * (e + (1-e)*sigma)
     q = (d*ay + gammaln(ay + x) - gammaln(ay) - c*y
-        + (csigma-1)*log(y) + log(c)*csigma - gammaln(csigma))
+        + (cxi-1)*log(y) + log(c)*cxi - gammaln(cxi))
     return np.sum(q)
 
-def objective(x, y, inter, basal, a, b, c, l):
+def objective(x, y, inter, basal, a, c, d, l):
     """
     Objective function to be maximized (all cells).
     """
@@ -114,7 +116,6 @@ def objective(x, y, inter, basal, a, b, c, l):
     C = x[:,0].size
     times = list(inter.keys())
     times.sort()
-    d = log(b/(b+1))
     Q = 0
     for time in times:
         Q += obj_t(x[t==time], y[t==time], inter[time], basal, a, c, d)
@@ -147,39 +148,19 @@ def obj_gene(i, x, y, inter, basal, c, l):
     Q -= penalization(inter, times, l)
     return Q/C
 
-def grad_y_obj_cell(x, y, inter, basal, a, c, d):
-    """
-    Objective function gradient with respect to y (one cell).
-    """
-    # Remove the stimulus
-    sigma = expit(basal + y @ inter)[1:]
-    x, y = x[1:], y[1:]
-    a, c, d = a[1:], c[1:], d[1:]
-    # if np.min(sigma) == 0: print('Warning: sigma = 0')
-    # Compute the log-likelihood gradient
-    ay = a * y
-    csigma = c * sigma
-    # Take care of stabilizing the digamma function
-    u = (1-sigma) * (csigma*log(c*y) - csigma*psi(csigma+1) + 1)
-    v = (csigma-1)/y - c + a*(d + psi(ay+x) - psi(ay))
-    # Restore the stimulus
-    u, v = np.append(0,u), np.append(0,v)
-    dq = inter @ u + v
-    dq[0] = 0
-    return dq
-
-def u_t_gene(i, y, inter, basal, c):
+def u_t_gene(i, y, inter, basal, a, c):
     """
     Compute the pivotal vector u for gene i for all cells at one time point.
     """
     sigma = expit(basal + y @ inter)
     # Compute the log-likelihood
-    csigma = c * sigma
+    e = a[0]/a[1]
+    xi = e + (1-e)*sigma
     # Take care of stabilizing the digamma function
-    u = (1-sigma) * (csigma*log(c*y[:,i]) - csigma*psi(csigma+1) + 1)
+    u = c * sigma * (1-xi) * (log(c*y[:,i]) - psi(c*xi))
     return u
 
-def grad_theta_gene(i, x, y, inter, basal, c, mask, l):
+def grad_theta_gene(i, x, y, inter, basal, a, c, mask, l):
     """
     Objective gradient for gene i for all cells.
     """
@@ -194,7 +175,7 @@ def grad_theta_gene(i, x, y, inter, basal, c, mask, l):
     p = grad_penalization(inter, times, l)
     # Add terms while keeping the sparsity structure
     for time in times:
-        u = u_t_gene(i, y[t==time], inter[time], basal, c)
+        u = u_t_gene(i, y[t==time], inter[time], basal, a, c)
         dbasal += np.sum(u)
         dinter[time] = abs(mask) * (y[t==time].T @ u)
     # # OPTION: no interactions at t = 0
@@ -213,25 +194,17 @@ def expectation(x, y, inter, basal, a, c, d, verb=False):
     C, G = x.shape
     t = x[:,0]
     n = 0
-    # Optimization of p = y[k] for each cell k
-    for k in range(C):
-        def f(p):
-            return -obj_cell(x[k], p, inter[t[k]], basal, a, c, d)
-        def Df(p):
-            return -grad_y_obj_cell(x[k], p, inter[t[k]], basal, a, c, d)
-        p0 = y[k]
-        bounds = [(None,None)] + (G-1) * [(1e-5,None)]
-        # options = {'gtol': 1e-1}
-        res = minimize(f, p0, method='L-BFGS-B', jac=Df, bounds=bounds,
-            tol=em_tol)
-        if not res.success: print('Warning, expectation step failed')
-        y[k] = res.x
-        # if verb: print('Fitted y[{}] in {} iterations'.format(k+1,res.nit))
-        n += res.nit
+    # Discrete optimization of y[k] for each cell k
+    # for k in range(C):
+
+    #     if not res.success: print('Warning, expectation step failed')
+    #     y[k] = res.x
+    #     # if verb: print('Fitted y[{}] in {} iterations'.format(k+1,res.nit))
+    #     n += res.nit
     # if verb: print('\tFitted y (avg.) {:.2f} iterations'.format(n/C))
     if verb: print('\tmax[y] = {}'.format(np.max(y)))
 
-def maximization(x, y, inter, basal, a, b, c, mask, sign, l, verb=False):
+def maximization(x, y, inter, basal, a, c, mask, l, verb=False):
     """
     Maximization step.
     """
@@ -252,7 +225,7 @@ def maximization(x, y, inter, basal, a, b, c, mask, sign, l, verb=False):
         def Df(theta):
             basal0 = theta[0]
             inter0 = {t: theta[1+k*G:1+(k+1)*G] for k, t in enumerate(times)}
-            dq = grad_theta_gene(i, x, y, inter0, basal0, c[i], mask[:,i], l)
+            dq = grad_theta_gene(i, x, y, inter0, basal0, a[:,i], c[i], mask[:,i], l)
             dtheta = np.zeros(1 + T*G)
             dtheta[0] = -dq[0]
             for k, t in enumerate(times):
@@ -260,12 +233,6 @@ def maximization(x, y, inter, basal, a, b, c, mask, sign, l, verb=False):
             return dtheta
         # Possible sign constraints
         bounds = None
-        if sign is not None:
-            bounds = (1 + T*G) * [(None,None)]
-            for k in range(T):
-                for j in range(G):
-                    if sign[j,i] > 0: bounds[1+k*G+j] = (0,None)
-                    if sign[j,i] < 0: bounds[1+k*G+j] = (None,0)
         # Solve the minimization problem
         # options = {'gtol': 1e-2}
         res = minimize(f, theta0, method='L-BFGS-B', jac=Df, bounds=bounds,
@@ -278,25 +245,24 @@ def maximization(x, y, inter, basal, a, b, c, mask, sign, l, verb=False):
         # if verb: print('Fitted gene {} in {} iterations'.format(i, res.nit))
     # if verb: print('\tFitted inter (avg.) {:.2f} iterations'.format(n/(G-1)))
 
-def inference(x, inter, basal, a, b, c, l, tol, mask, sign, max_iter,
-    save, verb):
+def inference(x, inter, basal, a, l, tol, max_iter, verb):
     """
     Network inference procedure using a CEM algorithm.
     Return the list of successive objective function values.
     """
     C, G = x.shape
-    times = list(set(x[:,0]))
-    times.sort()
-    T = len(times)
-    d = log(b/(b+1))
+    times = np.sort(list(set(x[:,0])))
+    # Useful parameters
+    c = 10 * np.ones(G)
+    d = log(a[2]/(a[2]+1))
     y = np.ones((C,G))
     y[x[:,0]<=0,0] = 0 # Stimulus at t <= 0
     # Mask
-    if mask is None: mask = np.ones((G,G),dtype='int') - np.eye(G,dtype='int')
+    mask = np.ones((G,G),dtype='int') - np.eye(G,dtype='int')
     mask[:,0] = 0
     # Initialization
     if verb: print('EM initialization...')
-    q = [objective(x, y, inter, basal, a, b, c, l)]
+    q = [objective(x, y, inter, basal, a, c, d, l)]
     obj_increase = tol + 1
     iter_count = 0
     if G == 1:
@@ -306,8 +272,8 @@ def inference(x, inter, basal, a, b, c, l, tol, mask, sign, max_iter,
         if verb: print('EM iteration {}...'.format(iter_count+1))
         # EM routine
         expectation(x, y, inter, basal, a, c, d, verb=verb)
-        maximization(x, y, inter, basal, a, b, c, mask, sign, l, verb=verb)
-        obj_new = objective(x, y, inter, basal, a, b, c, l)
+        maximization(x, y, inter, basal, a, c, mask, l, verb=verb)
+        obj_new = objective(x, y, inter, basal, a, c, d, l)
         q.append(obj_new)
         # obj_increase = q[-1] - q[-2]
         obj_increase = (q[-1] - q[-2])/max([abs(q[-2]),abs(q[-1]),1])
@@ -317,12 +283,6 @@ def inference(x, inter, basal, a, b, c, l, tol, mask, sign, max_iter,
             maxinter = np.max([np.max(np.abs(inter[t])) for t in times])
             print('\tmax|inter| = {}'.format(maxinter))
             print('\tObjective: {}'.format(obj_new))
-        # Saving
-        if save is not None:
-            np.save(save+'/basal', basal)
-            inter_ = np.zeros((T,G,G))
-            for k, t in enumerate(times): inter_[k] = inter[t]
-            np.save(save+'/inter', inter_)
     if iter_count < max_iter:
         print('Converged ({} steps)'.format(iter_count))
         # if verb: print('Converged ({} steps)'.format(iter_count))

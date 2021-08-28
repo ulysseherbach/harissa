@@ -25,7 +25,7 @@ def random_tree(a):
     """
     n = a[0].size
     tree = [[] for i in range(n)]
-    v = set([0]) # Vertices of the tree
+    v = {0} # Vertices of the tree
     r = list(range(1,n)) # Remaining vertices
     while len(r) > 0:
         state = r[0]

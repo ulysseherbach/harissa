@@ -40,9 +40,6 @@ class NetworkModel:
         """
         times = data[:,0]
         G = data[0].size
-        # # Store time-dependent values
-        # T = len(set(times))
-        # self.va = np.zeros((T,G))
         # Kinetic values for each gene
         a = np.zeros((3,G))
         a[1,0], a[2,0] = 1, 1
@@ -50,20 +47,18 @@ class NetworkModel:
             if verb: print('Calibrating gene {}...'.format(g))
             x = data[:,g]
             at, b = infer_kinetics(x, times, verb=verb)
+            a[0,g] = np.min(at)
             a[1,g] = np.max(at)
             a[2,g] = b
-            # self.va[:,g] = at
         self.a = a
 
-    def fit(self, data, l=1, tol=1e-4, mask=None, sign=None, max_iter=1000,
-        save=None, load=None, verb=False):
+    def fit(self, data, l=1, tol=1e-4, max_iter=1000, verb=False, sign=None):
         """
         Fit the network model to the data.
         Return the list of successive objective function values.
         """
         C, G = data.shape
-        times = list(set(data[:,0]))
-        times.sort()
+        times = np.sort(list(set(data[:,0])))
 
         # Default degradation rates
         d = np.zeros((2,G))
@@ -72,29 +67,19 @@ class NetworkModel:
         self.d = d
         
         # Get kinetic parameters
-        if load is None:
-            self.get_kinetics(data, verb)
-            if save is not None: np.save(save+'a', self.a)
-            # if save is not None: np.save(save+'at', self.va)
-        else: self.a = np.load(load+'a.npy')
+        self.get_kinetics(data, verb)
+        a = self.a
 
         # Initialization
         x = data
         basal = np.zeros(G)
         inter = {t: np.zeros((G,G)) for t in times}
-        a = self.a[1]
-        b = self.a[2]
-        c = 10 * np.ones(G)
-
-        # Load a previous run
-        if load is not None:
-            basal = np.load(load+'basal.npy')
-            inter_ = np.load(load+'inter.npy')
-            inter = {t: inter_[k] for k, t in enumerate(times)}
+        
 
         # Inference procedure
-        y, q = inference(x, inter, basal, a, b, c, l, tol, mask, sign,
-            max_iter, save, verb)
+        y, q = inference(x, inter, basal, a, l, tol, max_iter, verb)
+
+
 
         # Build the results
         self.basal = basal
@@ -180,16 +165,7 @@ class NetworkModel:
         # Final simulation with stimulus
         sim = network.simulation(t, verb=verb)
         m, p = sim['M'], sim['P']
-        print(m)
         return Simulation(self.genes, t, m, p)
-
-    def plot_obj(self, file=None):
-        from harissa.graphics import plot_obj as plot
-        plot(self.q, file=file)
-
-    def plot_xy(self, data, g1=1, g2=2, time=True, file=None):
-        from harissa.graphics import plot_xy as plot
-        plot(data, self.y, g1=g1, g2=g2, time=time, file=file)
 
 # Classes for simulations
 class Cascade(NetworkModel):

@@ -1,10 +1,11 @@
 import numpy as np
+from scipy.special import expit
 
 class BurstyPDMP:
     """
-    Bursty PDMP version of the network model (promoters states not described)
+    Bursty PDMP version of the network model (promoters not described)
     """
-    def __init__(self, a, d, basal, inter):
+    def __init__(self, a, d, basal, inter, thin_adapt=True):
         # Kinetic parameters
         G = basal.size
         D0, D1 = d[0], d[1]
@@ -20,16 +21,33 @@ class BurstyPDMP:
         # Default state
         types = [('M','float'), ('P','float')]
         self.state = np.array([(0,0) for i in range(G)], dtype=types)
-        # Simulation parameter
-        self.thin_cst = np.sum(K1[1:]) # No burst for the stimulus
+        # Thinning parameter
+        self.thin_cst = None if thin_adapt else np.sum(K1[1:])
 
     def kon(self, p):
         """
         Interaction function kon (off->on rate), given protein levels p.
         """
-        Phi = np.exp(self.basal + p @ self.inter)
         K0, K1 = self.param['K0'], self.param['K1']
-        Kon = (K0 + K1*Phi)/(1 + Phi)
+        sigma = expit(self.basal + p @ self.inter)
+        Kon = (1-sigma)*K0 + sigma*K1
+        Kon[0] = 0 # Ignore stimulus
+        return Kon
+
+    def kon_bound(self):
+        """
+        Compute the current kon upper bound.
+        """
+        M, P = self.state['M'], self.state['P']
+        D0, D1, S1 = self.param['D0'], self.param['D1'], self.param['S1']
+        # Explicit upper bound for P
+        time = np.log(D0/D1)/(D0-D1) # Vector of critical times
+        pmax = P + (S1/(D0-D1))*M*(np.exp(-time*D1) - np.exp(-time*D0))
+        pmax[0] = P[0] # Discard stimulus
+        # Explicit upper bound for Kon
+        K0, K1 = self.param['K0'], self.param['K1']
+        sigma = expit(self.basal + pmax @ ((self.inter > 0) * self.inter))
+        Kon = (1-sigma)*K0 + sigma*K1 + 1e-10 # Fix precision errors
         Kon[0] = 0 # Ignore stimulus
         return Kon
 
@@ -51,7 +69,10 @@ class BurstyPDMP:
         Compute the next jump and the next step of the
         thinning method, in the case of the bursty model.
         """
-        tau = self.thin_cst
+        if self.thin_cst is None:
+            # Adaptive thinning parameter
+            tau = np.sum(self.kon_bound())
+        else: tau = self.thin_cst
         jump = False # Test if the jump is a true or phantom jump
         # 0. Draw the waiting time before the next jump
         U = np.random.exponential(scale=1/tau)
@@ -60,7 +81,6 @@ class BurstyPDMP:
         self.state['M'], self.state['P'] = M, P
         # 2. Compute the next jump
         G = self.basal.size # Genes plus stimulus
-        v = np.zeros(G) # Probabilities for possible transitions
         v = self.kon(P)/tau # i = 1, ..., G-1 : burst of mRNA i
         v[0] = 1 - np.sum(v[1:]) # i = 0 : no change (phantom jump)
         i = np.random.choice(G, p=v)

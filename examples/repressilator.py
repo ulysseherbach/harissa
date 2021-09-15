@@ -1,4 +1,4 @@
-# Generate data for a basic network
+# Basic repressilator network (3 genes)
 import sys; sys.path += ['../']
 import numpy as np
 import matplotlib.pyplot as plt

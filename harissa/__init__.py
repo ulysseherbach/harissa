@@ -11,9 +11,12 @@ It is analogous to the unrestricted Hartree approximation
 in quantum mechanics, applied to gene expression modeled
 as a piecewise-deterministic Markov process (PDMP).
 
+The package also includes a simulation module to generate
+single-cell data with transcriptional bursting.
+
 Author: Ulysse Herbach (ulysse.herbach@inria.fr)
 """
-__version__ = '2.0'
+__version__ = '3.0'
 
 from .model import NetworkModel, Cascade, Tree
 

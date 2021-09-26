@@ -1,3 +1,6 @@
+"""
+Perform simulations using the ODE model
+"""
 import numpy as np
 
 class ApproxODE:

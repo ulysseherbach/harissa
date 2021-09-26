@@ -4,7 +4,7 @@ harissa.inference
 
 Inference of the network model.
 """
-from .network import inference
 from .kinetics import infer_kinetics
+from .network import infer_proteins, infer_network
 
-__all__ = ['inference', 'infer_kinetics']
+__all__ = ['infer_kinetics', 'infer_proteins', 'infer_network']

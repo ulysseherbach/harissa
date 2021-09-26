@@ -1,4 +1,6 @@
-"""Generate random trees"""
+"""
+Generate random trees
+"""
 import numpy as np
 
 def random_step(state, a):

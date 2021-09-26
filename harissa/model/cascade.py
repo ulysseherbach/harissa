@@ -1,4 +1,6 @@
-"""Generate cascade networks"""
+"""
+Generate cascade networks
+"""
 import numpy as np
 
 def cascade(n_genes):

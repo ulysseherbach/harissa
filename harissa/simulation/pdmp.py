@@ -1,3 +1,6 @@
+"""
+Perform simulations using the PDMP model
+"""
 import numpy as np
 from scipy.special import expit
 

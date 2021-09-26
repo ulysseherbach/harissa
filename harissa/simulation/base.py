@@ -1,7 +1,6 @@
 """
-Perform simulations
+Store simulations
 """
-import numpy as np
 
 class Simulation:
     """

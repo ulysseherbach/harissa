@@ -4,7 +4,7 @@ Main class for network inference and simulation
 import numpy as np
 from .cascade import cascade
 from .tree import tree
-from ..inference import inference, infer_kinetics
+from ..inference import infer_kinetics, infer_proteins, infer_network
 from ..simulation import Simulation, BurstyPDMP, ApproxODE
 
 class NetworkModel:
@@ -41,10 +41,9 @@ class NetworkModel:
         times = data[:,0]
         G = data[0].size
         # Kinetic values for each gene
-        a = np.zeros((3,G))
-        a[1,0], a[2,0] = 1, 1
+        a = np.ones((3,G))
         for g in range(1,G):
-            if verb: print('Calibrating gene {}...'.format(g))
+            if verb: print(f'Calibrating gene {g}...')
             x = data[:,g]
             at, b = infer_kinetics(x, times, verb=verb)
             a[0,g] = np.min(at)
@@ -52,46 +51,42 @@ class NetworkModel:
             a[2,g] = b
         self.a = a
 
-    def fit(self, data, l=1, tol=1e-4, max_iter=1000, verb=False, sign=None):
+    def fit(self, data, l=1, tol=1e-5, verb=False):
         """
         Fit the network model to the data.
         Return the list of successive objective function values.
         """
-        C, G = data.shape
-        times = np.sort(list(set(data[:,0])))
-
+        x = data
+        # Time points
+        times = np.sort(list(set(x[:,0])))
+        self.times = times
         # Default degradation rates
+        C, G = x.shape
         d = np.zeros((2,G))
         d[0] = np.log(2)/9 # mRNA degradation rates
         d[1] = np.log(2)/46 # protein degradation rates
         self.d = d
-        
-        # Get kinetic parameters
+        # Kinetic parameters
         self.get_kinetics(data, verb)
         a = self.a
-
-        # Initialization
-        x = data
-        basal = np.zeros(G)
-        inter = {t: np.zeros((G,G)) for t in times}
-        
-
-        # Inference procedure
-        y, q = inference(x, inter, basal, a, l, tol, max_iter, verb)
-
-
-
-        # Build the results
-        self.basal = basal
-        self.inter_time = inter
-        self.inter = np.zeros((G,G))
-        for i in range(G):
-            for j in range(G):
-                val = np.array([inter[t][i,j] for t in set(times) - {0}])
-                self.inter[i,j] = val[np.argmax(np.abs(val))]
+        # Concentration parameter
+        c = 100 * np.ones(G)
+        # Get protein levels
+        y = infer_proteins(x, a)
         self.y = y
-        self.q = q
-        
+        # Inference procedure
+        theta = infer_network(x, y, a, c, l, tol, verb)
+        # Build the results
+        self.basal = np.zeros(G)
+        self.inter = np.zeros((G,G))
+        self.basal_time = {time: np.zeros(G) for time in times}
+        self.inter_time = {time: np.zeros((G,G)) for time in times}
+        for t, time in enumerate(times):
+            self.basal_time[time][:] = theta[t][:,0]
+            self.inter_time[time][:,1:] = theta[t][:,1:]
+        self.basal[:] = theta[-1][:,0]
+        self.inter[:,1:] = theta[-1][:,1:]
+
     def simulate(self, t, burnin=None, genes=None, verb=False):
         """
         Perform simulation of the network model (bursty PDMP version).

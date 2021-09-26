@@ -13,4 +13,4 @@ This is a Python package for inferring gene regulatory networks from single-cell
 Please see the [examples](https://github.com/ulysseherbach/harissa/tree/master/examples) folder.
 
 ### Dependencies
-The package depends on the following standard scientific libraries: `numpy`, `scipy`.
+The package depends on the following standard scientific libraries: `numpy`, `scipy`. Besides, it loads `numba` for accelerating the inference procedure (optional, activated by default).

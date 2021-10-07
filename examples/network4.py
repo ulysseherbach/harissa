@@ -1,4 +1,4 @@
-# Generate data for a basic network
+# Generate data for a basic 4-gene network with stimulus
 import sys; sys.path += ['../']
 import numpy as np
 from harissa import NetworkModel

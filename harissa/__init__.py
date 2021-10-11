@@ -16,7 +16,7 @@ single-cell data with transcriptional bursting.
 
 Author: Ulysse Herbach (ulysse.herbach@inria.fr)
 """
-__version__ = '3.0'
+__version__ = '3.0.3'
 
 from .model import NetworkModel, Cascade, Tree
 

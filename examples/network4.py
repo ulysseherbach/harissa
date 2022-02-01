@@ -6,7 +6,7 @@ from harissa import NetworkModel
 np.random.seed(0)
 
 # Number of cells
-C = 10
+C = 100
 
 # Time points
 k = np.linspace(0, C, 11, dtype='int')
@@ -25,7 +25,7 @@ data[1:,0] = time # Time points
 data[1:,1] = 1 * (time > 0) # Stimulus
     
 # Initialize the model
-model = NetworkModel(4)
+model = NetworkModel(G)
 model.d[0] = 1
 model.d[1] = 0.2
 model.basal[1:] = -5
@@ -39,7 +39,7 @@ model.inter[3,3] = 10
 
 # Generate data
 for k in range(C):
-    # print(f'* Cell {k+1}')
+    print(f'* Cell {k+1}')
     sim = model.simulate(time[k], burnin=5)
     data[k+1,2:] = np.random.poisson(sim.m[0])
 

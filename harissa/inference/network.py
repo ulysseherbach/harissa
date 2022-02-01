@@ -5,7 +5,7 @@ import numpy as np
 from numpy import log
 from scipy.special import expit, gammaln, psi
 from scipy.optimize import minimize
-from numba import njit
+from ..utils import njit
 
 # Smoothing threshold
 s = 0.1

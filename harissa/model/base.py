@@ -28,8 +28,8 @@ class NetworkModel:
             self.a[2] = 0.02 # Inverse burst size of mRNA
             # Default degradation rates
             self.d = np.zeros((2,G))
-            self.d[0] = np.log(2)/9 # mRNA degradation rates
-            self.d[1] = np.log(2)/46 # protein degradation rates
+            self.d[0] = np.log(2)/9 # mRNA degradation rates (per hour)
+            self.d[1] = np.log(2)/46 # protein degradation rates (per hour)
             # Default network parameters
             self.basal = np.zeros(G)
             self.inter = np.zeros((G,G))
@@ -87,15 +87,15 @@ class NetworkModel:
         self.basal[:] = theta[-1][:,0]
         self.inter[:,1:] = theta[-1][:,1:]
 
-    def simulate(self, t, burnin=None, genes=None, verb=False):
+    def simulate(self, t, M0=None, P0=None, burnin=None, verb=False):
         """
         Perform simulation of the network model (bursty PDMP version).
         """
         # Check parameters
-        test = ((self.a is None) + (self.d is None)
+        check = ((self.a is None) + (self.d is None)
                 + (self.basal is None) + (self.inter is None))
         # Prepare time points
-        if test: raise ValueError('Model parameters not yet specified')
+        if check: raise ValueError('Model parameters not yet specified')
         if np.size(t) == 1: t = np.array([t])
         if np.any(t != np.sort(t)):
             raise ValueError('Time points must appear in increasing order')
@@ -105,6 +105,8 @@ class NetworkModel:
         inter = self.inter
         network = BurstyPDMP(a, d, basal, inter)
         # Burnin simulation without stimulus
+        if M0 is not None: network.state['M'][1:] = M0[1:]
+        if P0 is not None: network.state['P'][1:] = P0[1:]
         if burnin is not None: network.simulation([burnin], verb)
         # Activate the stimulus
         network.state['P'][0] = 1
@@ -118,10 +120,10 @@ class NetworkModel:
         Perform simulation of the network model (ODE version).
         """
         # Check parameters
-        test = ((self.a is None) + (self.d is None)
+        check = ((self.a is None) + (self.d is None)
                 + (self.basal is None) + (self.inter is None))
         # Prepare time points
-        if test: raise ValueError('Model parameters not specified yet')
+        if check: raise ValueError('Model parameters not specified yet')
         if self.inter is None: print('Interactions must be specified')
         if np.size(t) == 1: t = np.array([t])
         if np.any(t != np.sort(t)):

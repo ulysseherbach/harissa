@@ -40,8 +40,10 @@ class BurstyPDMP:
         if np.size(timepoints) == 1: timepoints = np.array([timepoints])
         timepoints = timepoints.astype(float)
         # Compute the simulation
-        states = simulation(timepoints, basal, inter,
+        states = simulate(timepoints, basal, inter,
             K0, K1, B, D0, D1, S1, M, P, thin, verb)
+        # Update the current state
+        self.state['M'], self.state['P'] = states[0,-1], states[1,-1]
         # Store the results
         types = [('M','float64'), ('P','float64')]
         G, sim = basal.size, []
@@ -117,7 +119,7 @@ def step(basal, inter, K0, K1, B, D0, D1, S1, M, P, thin):
     return U, jump
 
 @njit
-def simulation(timepoints, basal, inter, K0, K1, B, D0, D1, S1, M, P,
+def simulate(timepoints, basal, inter, K0, K1, B, D0, D1, S1, M, P,
     thin, verb):
     """
     Exact simulation of the network in the bursty PDMP case.
@@ -137,8 +139,6 @@ def simulation(timepoints, basal, inter, K0, K1, B, D0, D1, S1, M, P,
             else: c0 += 1
         state = flow(D0, D1, S1, Mold, Pold, t - Told)
         states[0,k], states[1,k] = state[0], state[1]
-    # Update the current state
-    M[:], P[:] = state[0], state[1]
     # Display info about jumps
     if verb:
         ctot = c0 + c1

@@ -4,8 +4,7 @@ Main class for network inference and simulation
 import numpy as np
 from .cascade import cascade
 from .tree import tree
-from ..inference import infer_kinetics, infer_proteins, infer_network
-from ..simulation import Simulation, BurstyPDMP, ApproxODE
+from ..inference import infer_kinetics, infer_proteins
 
 class NetworkModel:
     """
@@ -51,7 +50,7 @@ class NetworkModel:
             a[2,g] = b
         self.a = a
 
-    def fit(self, data, l=1, tol=1e-5, verb=False):
+    def fit(self, data, l=1, tol=1e-5, verb=False, use_numba=True):
         """
         Fit the network model to the data.
         Return the list of successive objective function values.
@@ -74,6 +73,9 @@ class NetworkModel:
         # Get protein levels
         y = infer_proteins(x, a)
         self.y = y
+        # Import necessary modules
+        if use_numba: from ..inference.network_fast import infer_network
+        else: from ..inference.network import infer_network
         # Inference procedure
         theta = infer_network(x, y, a, c, l, tol, verb)
         # Build the results
@@ -87,7 +89,8 @@ class NetworkModel:
         self.basal[:] = theta[-1][:,0]
         self.inter[:,1:] = theta[-1][:,1:]
 
-    def simulate(self, t, M0=None, P0=None, burnin=None, verb=False):
+    def simulate(self, t, M0=None, P0=None, burnin=None, verb=False,
+        use_numba=False):
         """
         Perform simulation of the network model (bursty PDMP version).
         """
@@ -99,6 +102,10 @@ class NetworkModel:
         if np.size(t) == 1: t = np.array([t])
         if np.any(t != np.sort(t)):
             raise ValueError('Time points must appear in increasing order')
+        # Import necessary modules
+        from ..simulation.base import Simulation
+        if use_numba: from ..simulation.pdmp_fast import BurstyPDMP
+        else: from ..simulation.pdmp import BurstyPDMP
         a = self.a
         d = self.d
         basal = self.basal
@@ -130,6 +137,9 @@ class NetworkModel:
             raise ValueError('Time points must appear in increasing order')
         if self.genes is None:
             raise ValueError('genes not yet provided')
+        # Import necessary modules
+        from ..simulation.base import Simulation
+        from ..simulation.ode import ApproxODE
         v = [0] + self.genes
         # Case 1 (no filtering): all genes are simulated
         if self.filter is None:

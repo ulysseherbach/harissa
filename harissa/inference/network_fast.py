@@ -1,26 +1,31 @@
 """
 Core functions for network inference using likelihood maximization
+NB: Fast version using Numba
 """
 import numpy as np
 from numpy import log
 from scipy.special import expit, gammaln, psi
 from scipy.optimize import minimize
+from numba import njit
 
 # Smoothing threshold
 s = 0.1
 
+@njit
 def p1(x, s):
     """
     Smoothed L1 penalization.
     """
     return (x-s/2)*(x>s) - (x+s/2)*(-x>s) + ((x**2)/(2*s))*(x<=s and -x<=s)
 
+@njit
 def grad_p1(x, s):
     """
     Smoothed L1 penalization gradient.
     """
     return 1*(x>s) - 1*(-x>s) + (x/s)*(x<=s and -x<=s)
 
+@njit
 def penalization(theta, theta0, t):
     """
     Penalization of network parameters.
@@ -43,6 +48,7 @@ def penalization(theta, theta0, t):
     # Final penalization
     return p
 
+@njit
 def grad_penalization(theta, theta0, t):
     """
     Penalization gradient of network parameters.

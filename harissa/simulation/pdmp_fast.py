@@ -1,6 +1,6 @@
 """
 Perform simulations using the PDMP model - Fast version using Numba
-NB: This module takes time to compile (~10s) but is much more efficient,
+NB: This module takes time to compile (~8s) but is much more efficient,
 which is typically suited for large numbers of genes and/or cells
 """
 import numpy as np

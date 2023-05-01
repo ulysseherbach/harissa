@@ -49,7 +49,8 @@ def random_tree(a):
 def tree(n_genes, weight=None):
     """
     Generate a random tree-like network model.
-    Note: weight[i,j] is the probability weight of link (i) -> (j).
+    A tree with root 0 is sampled from the ‘weighted-uniform’ distribution,
+    where weight[i,j] is the probability weight of link (i) -> (j).
     """
     G = n_genes + 1
     if weight is not None:
@@ -73,4 +74,5 @@ def tree(n_genes, weight=None):
 # Tests
 if __name__ == '__main__':
     basal, inter = tree(5)
+    print(basal)
     print(inter)

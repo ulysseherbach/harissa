@@ -33,9 +33,9 @@ class NetworkModel:
             self.basal = np.zeros(G)
             self.inter = np.zeros((G,G))
 
-    def get_kinetics(self, data, verb):
+    def get_kinetics(self, data, verb=False):
         """
-        Compute the basal parameters of filtered genes.
+        Compute the basal parameters of all genes.
         """
         times = data[:,0]
         G = data[0].size
@@ -53,7 +53,6 @@ class NetworkModel:
     def fit(self, data, l=1, tol=1e-5, verb=False, use_numba=True):
         """
         Fit the network model to the data.
-        Return the list of successive objective function values.
         """
         x = data
         # Time points
@@ -122,9 +121,13 @@ class NetworkModel:
         m, p = sim['M'], sim['P']
         return Simulation(t, m, p)
 
-    def simulate_ode(self, t, burnin=None, verb=False):
+    def simulate_ode(self, t, M0=None, P0=None, burnin=None, verb=False):
         """
         Perform simulation of the network model (ODE version).
+        This is the slow-fast limit of the PDMP model, which is only
+        relevant when promoters & mRNA are much faster than proteins.
+        p: solution of a nonlinear ODE system involving proteins only
+        m: mean mRNA levels given protein levels (quasi-steady state)
         """
         # Check parameters
         check = ((self.a is None) + (self.d is None)
@@ -135,46 +138,27 @@ class NetworkModel:
         if np.size(t) == 1: t = np.array([t])
         if np.any(t != np.sort(t)):
             raise ValueError('Time points must appear in increasing order')
-        if self.genes is None:
-            raise ValueError('genes not yet provided')
         # Import necessary modules
         from ..simulation.base import Simulation
         from ..simulation.ode import ApproxODE
-        v = [0] + self.genes
-        # Case 1 (no filtering): all genes are simulated
-        if self.filter is None:
-            a = self.a
-            d = self.d
-            basal = self.basal
-            inter = self.inter
-        # Case 2 (filtering): only filtered genes are simulated
-        else:
-            G = len(v)
-            a = np.zeros((3,G))
-            d = np.zeros((2,G))
-            basal = np.zeros(G)
-            inter = np.zeros((G,G))
-            for i in range(G):
-                a[0,i] = self.a[0,v[i]]
-                a[1,i] = self.a[1,v[i]]
-                a[2,i] = self.a[2,v[i]]
-                d[0,i] = self.d[0,v[i]]
-                d[1,i] = self.d[1,v[i]]
-                basal[i] = self.basal[v[i]]
-                for j in range(G):
-                    inter[i,j] = self.inter[v[i],v[j]]
+        a = self.a
+        d = self.d
+        basal = self.basal
+        inter = self.inter
         network = ApproxODE(a, d, basal, inter)
         # Burnin simulation without stimulus
-        if burnin is not None:
-            network.simulation([burnin], verb=verb)
+        if M0 is not None: network.state['M'][1:] = M0[1:]
+        if P0 is not None: network.state['P'][1:] = P0[1:]
+        if burnin is not None: network.simulation([burnin], verb)
         # Activate the stimulus
         network.state['P'][0] = 1
         # Final simulation with stimulus
-        sim = network.simulation(t, verb=verb)
+        sim = network.simulation(t, verb)
         m, p = sim['M'], sim['P']
-        return Simulation(self.genes, t, m, p)
+        return Simulation(t, m, p)
 
-# Classes for simulations
+#### Classes for simulations ####
+
 class Cascade(NetworkModel):
     """
     Particular network with a cascade structure.

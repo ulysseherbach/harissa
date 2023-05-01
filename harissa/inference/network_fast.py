@@ -1,6 +1,6 @@
 """
 Core functions for network inference using likelihood maximization
-NB: Fast version using Numba
+NB: This is the fast version using Numba
 """
 import numpy as np
 from numpy import log
@@ -111,7 +111,9 @@ def grad_theta(theta, theta0, x, y, a, c, d, l, t):
     return dq.reshape(G**2)
 
 def infer_proteins(x, a):
-    """Estimate y directly from data."""
+    """
+    Estimate y directly from data.
+    """
     C, G = x.shape
     y = np.ones((C,G))
     z = np.ones((2,G))

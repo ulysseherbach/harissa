@@ -2,6 +2,7 @@
 Perform simulations using the ODE model
 """
 import numpy as np
+from scipy.special import expit
 
 class ApproxODE:
     """
@@ -24,17 +25,15 @@ class ApproxODE:
         types = [('M','float'), ('P','float')]
         self.state = np.array([(0,0) for i in range(G)], dtype=types)
         # Simulation parameter
-        d0, d1, s1 = np.max(D0), np.max(D1), np.max(S1)
-        k0, k1, b = np.max(K0), np.max(K1), np.max(B)
-        self.euler_step = 0.01/np.max([d0, d1, s1, k0, k1, b])
+        self.euler_step = 1e-3/np.max(D1)
 
     def kon(self, p):
         """
         Interaction function kon (off->on rate), given protein levels p.
         """
-        Phi = np.exp(self.basal + p @ self.inter)
         K0, K1 = self.param['K0'], self.param['K1']
-        Kon = (K0 + K1*Phi)/(1 + Phi)
+        sigma = expit(self.basal + p @ self.inter)
+        Kon = (1-sigma)*K0 + sigma*K1
         Kon[0] = 0 # Ignore stimulus
         return Kon
 
@@ -44,17 +43,17 @@ class ApproxODE:
         """
         M, P = self.state['M'], self.state['P']
         D0, D1, S1 = self.param['D0'], self.param['D1'], self.param['S1']
-        a, b = self.kon(P), self.param['B']
-        Mnew = (1 - dt*D0)*M + dt*a/b
-        Pnew = (1 - dt*D1)*P + dt*S1*M
+        a, b = self.kon(P)/D0, self.param['B'] # a = kon/d0, b = koff/s0
+        Mnew = a/b # Mean level of mRNA given protein levels
+        Pnew = (1 - dt*D1)*P + dt*S1*Mnew # Protein-only ODE system
         Mnew[0], Pnew[0] = M[0], P[0] # Discard stimulus
         self.state['M'], self.state['P'] = Mnew, Pnew
 
     def simulation(self, timepoints, verb=False):
         """
         Simulation of the deterministic limit model, which is relevant when
-        promoters/RNA are much faster than proteins.
-        1. ODE system involving proteins only
+        promoters and mRNA are much faster than proteins.
+        1. Nonlinear ODE system involving proteins only
         2. Mean level of mRNA given protein levels
         """
         G = self.basal.size
@@ -64,7 +63,7 @@ class ApproxODE:
         types = [('M','float64'), ('P','float64')]
         sim = []
         T, c = 0, 0
-        ### The core loop for simulation and recording
+        # Core loop for simulation and recording
         for t in timepoints:
             while T < t:
                 self.step_ode(dt)

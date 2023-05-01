@@ -3,11 +3,5 @@
 
 # Other files
 *.pyc
-*.ipynb
 *.pdf
 *.html
-*.rtf
-
-# Working files
-todo.txt
-tests

@@ -12,22 +12,22 @@ This is a Python package for both simulation and reverse engineering of gene reg
 * Basic GRN visualization (directed graphs with positive or negative edge weights);
 * Binarization of scRNA-seq data (using gene-specific thresholds derived from the data-calibrated dynamical model).
 
+### Tutorial
+
+Please see [harissa-notebooks](https://github.com/ulysseherbach/harissa-notebooks) for introductory examples, or the [tests](https://github.com/ulysseherbach/harissa/tree/master/tests) folder for basic usage scripts.
+
 ### Usage
 
 ```python
 from harissa import NetworkModel
 
-# Calibrate the model
+# Inference
 model = NetworkModel()
 model.fit(data)
 
-# Simulate the model
+# Simulation
 sim = model.simulate(time)
 ```
-
-### Tutorial
-
-Please see the [harissa-notebooks](https://github.com/ulysseherbach/harissa-notebooks) for introductory examples, or the [tests](https://github.com/ulysseherbach/harissa/tree/master/tests) folder for basic usage scripts.
 
 ### Dependencies
 

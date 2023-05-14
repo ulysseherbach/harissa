@@ -1,6 +1,6 @@
 # Harissa
 
-This is a Python package for both simulation and reverse engineering of gene regulatory networks from single-cell data. Its name comes from ‘HARtree approximation for Inference along with a Stochastic Simulation Algorithm.’ It was implemented in the context of a [mechanistic approach to gene regulatory network inference from single-cell data](https://bmcsystbiol.biomedcentral.com/articles/10.1186/s12918-017-0487-0) and is based upon an underlying stochastic dynamical model driven by the [transcriptional bursting](https://en.wikipedia.org/wiki/Transcriptional_bursting) phenomenon.
+This is a Python package for both simulation and reverse engineering of gene regulatory networks from single-cell data. Its name comes from ‘HARtree approximation for Inference along with a Stochastic Simulation Algorithm.’ It was implemented in the context of a [mechanistic approach to gene regulatory network inference](https://bmcsystbiol.biomedcentral.com/articles/10.1186/s12918-017-0487-0) from single-cell data, based upon an underlying stochastic dynamical model driven by the [transcriptional bursting](https://en.wikipedia.org/wiki/Transcriptional_bursting) phenomenon.
 
 *Main functionalities:*
 
@@ -10,7 +10,7 @@ This is a Python package for both simulation and reverse engineering of gene reg
 *Other available tools:*
 
 * Basic GRN visualization (directed graphs with positive or negative edge weights);
-* Binarization of scRNA-seq data (using gene-specific thresholds derived from the data-calibrated dynamical model).
+* Binarization of scRNA-seq data (using gene-specific thresholds derived from the calibrated dynamical model).
 
 ### Tutorial
 

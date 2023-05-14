@@ -1,0 +1,2 @@
+# Ignore notebooks in language stats
+*.ipynb linguist-vendored

@@ -1,7 +1,12 @@
 # OS files
 *.DS_Store
 
-# Other files
+# Python
 *.pyc
+
+# Notebook
+.ipynb_checkpoints
+
+# Other
 *.pdf
 *.html

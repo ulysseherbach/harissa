@@ -14,7 +14,7 @@ This is a Python package for both simulation and reverse engineering of gene reg
 
 ### Tutorial
 
-Please see the `notebooks` folder for introductory examples, or the `tests` folder for basic usage scripts.
+Please see the [harissa-notebooks](https://github.com/ulysseherbach/harissa-notebooks) for introductory examples, or the `tests` folder for basic usage scripts.
 
 ### Dependencies
 

@@ -1,6 +1,4 @@
-# Harissa-notebooks
-
-Tutorial notebooks for the [Harissa](https://github.com/ulysseherbach/harissa) package:
+# Harissa notebooks
 
 * **Notebook 1 - Simulation**  
 Simulate a basic repressilator network with 3 genes

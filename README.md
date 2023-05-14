@@ -31,4 +31,4 @@ sim = model.simulate(time)
 
 ### Dependencies
 
-The package depends on the standard scientific libraries `numpy` and `scipy`. Optionally, it loads `numba` for accelerating the inference procedure (used by default) and the simulation procedure (not used by default). It also depends optionally on `matplotlib` and `networkx` which are required for network visualization.
+The package depends on the standard scientific libraries `numpy` and `scipy`. Optionally, it loads `numba` for accelerating the inference procedure (used by default) and the simulation procedure (not used by default). It also depends optionally on `matplotlib` and `networkx` for network visualization.

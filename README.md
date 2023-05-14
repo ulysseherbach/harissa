@@ -1,6 +1,6 @@
 # Harissa
 
-This is a Python package for both simulation and inference of gene regulatory networks from single-cell data. Its name comes from ‘HARtree approximation for Inference along with a Stochastic Simulation Algorithm.’ It was implemented in the context of a [mechanistic approach](https://bmcsystbiol.biomedcentral.com/articles/10.1186/s12918-017-0487-0) to gene regulatory network inference from single-cell data, based upon an underlying stochastic dynamical model driven by the [transcriptional bursting](https://en.wikipedia.org/wiki/Transcriptional_bursting) phenomenon.
+This is a Python package for both simulation and inference of gene regulatory networks from single-cell data. Its name comes from ‘HARtree approximation for Inference along with a Stochastic Simulation Algorithm.’ It was implemented in the context of a [mechanistic approach](https://doi.org/10.1186/s12918-017-0487-0) to gene regulatory network inference from single-cell data, based upon an underlying stochastic dynamical model driven by the [transcriptional bursting](https://en.wikipedia.org/wiki/Transcriptional_bursting) phenomenon.
 
 *Main functionalities:*
 
@@ -29,7 +29,7 @@ sim = model.simulate(time)
 
 ### Tutorial
 
-Please see the [notebooks](https://github.com/ulysseherbach/harissa/tree/master/notebooks) for introductory examples, or the [tests](https://github.com/ulysseherbach/harissa/tree/master/tests) folder for basic usage scripts.
+Please see the [notebooks](https://github.com/ulysseherbach/harissa/tree/main/notebooks) for introductory examples, or the [tests](https://github.com/ulysseherbach/harissa/tree/main/tests) folder for basic usage scripts.
 
 ### Dependencies
 

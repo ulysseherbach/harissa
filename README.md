@@ -15,16 +15,13 @@ This is a Python package for both simulation and reverse engineering of gene reg
 ### Usage
 
 ```python
-import numpy as np
 from harissa import NetworkModel
 
 # Calibrate the model
-data = np.loadtxt('data.txt')
 model = NetworkModel()
 model.fit(data)
 
 # Simulate the model
-time = np.linspace(0,10,1000)
 sim = model.simulate(time)
 ```
 

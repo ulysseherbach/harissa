@@ -2,8 +2,8 @@
 Harissa
 =======
 
-Gene regulatory network inference from single-cell data
--------------------------------------------------------
+Tools for mechanistic gene network inference from single-cell data
+------------------------------------------------------------------
 
 Mechanistic model-based gene network inference using
 a self-consistent proteomic field (SCPF) approximation.

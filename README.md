@@ -70,7 +70,7 @@ Please see the [notebooks](https://github.com/ulysseherbach/harissa/tree/main/no
 
 - [Notebook 1](https://github.com/ulysseherbach/harissa/blob/main/notebooks/notebook1.ipynb): simulate a basic repressilator network with 3 genes;
 - [Notebook 2](https://github.com/ulysseherbach/harissa/blob/main/notebooks/notebook2.ipynb): perform network inference from a small dataset with 4 genes;
-- [Notebook 3](https://github.com/ulysseherbach/harissa/blob/main/notebooks/notebook3.ipynb): compare two different branching pathways with 4 genes from both ‘single-cell’ and ‘bulk’ viewpoints.
+- [Notebook 3](https://github.com/ulysseherbach/harissa/blob/main/notebooks/notebook3.ipynb): compare two branching pathways with 4 genes from both ‘single-cell’ and ‘bulk’ viewpoints.
 
 ## Dependencies
 

@@ -44,11 +44,11 @@ import numpy as np
 
 data = np.array([
     #t g1 g2 g3
-    [0, 4, 1, 0], # Cell 1 | Before stimulus (t = 0)
-    [0, 5, 0, 1], # Cell 2 |
-    [1, 1, 2, 4], # Cell 3 | Active stimulus (t > 0)
-    [1, 2, 0, 8], # Cell 4 |
-    [1, 0, 0, 3], # Cell 5 |
+    [0, 4, 1, 0], # Cell 1
+    [0, 5, 0, 1], # Cell 2
+    [1, 1, 2, 4], # Cell 3
+    [1, 2, 0, 8], # Cell 4
+    [1, 0, 0, 3], # Cell 5
 ])
 ```
 

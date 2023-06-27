@@ -62,7 +62,7 @@ The `sim` output stores mRNA and protein levels as attributes `sim.m` and `sim.p
 
 ## About the data
 
-The inference algorithm specifically exploits time-course data, where single-cell profiling is performed at a number of time points after a stimulus. Each group of cells collected at the same experimental time *t*<sub>*k*</sub> forms a *snapshot* of the biological heterogeneity at time *t*<sub>*k*</sub>. Due to the destructive nature of the measurement process, snapshots are made of different cells. Such data is therefore different from so-called ‘pseudotime’ trajectories, which attempt to reorder cells according to some smoothness hypotheses.
+The inference algorithm specifically exploits time-course data, where single-cell profiling is performed at a number of time points after a stimulus (see [this paper](https://doi.org/10.1371/journal.pcbi.1010962) for an example with real data). Each group of cells collected at the same experimental time *t*<sub>*k*</sub> forms a *snapshot* of the biological heterogeneity at time *t*<sub>*k*</sub>. Due to the destructive nature of the measurement process, snapshots are made of different cells. Such data is therefore different from so-called ‘pseudotime’ trajectories, which attempt to reorder cells according to some smoothness hypotheses.
 
 ## Tutorial
 

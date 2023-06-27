@@ -58,7 +58,7 @@ The `time` argument is either a single time or a list of time points. For exampl
 time = np.linspace(0,10,1000)
 ```
 
-The `sim ` output stores mRNA and protein levels as attributes `sim.m` and `sim.p`, respectively (each row is a time point and each column is a gene).
+The `sim` output stores mRNA and protein levels as attributes `sim.m` and `sim.p`, respectively (each row is a time point and each column is a gene).
 
 ### About the data
 

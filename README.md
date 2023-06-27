@@ -52,7 +52,7 @@ data = np.array([
 ])
 ```
 
-The `time` argument is either a single time or a list of time points. For example, a single-cell trajectory (not available from scRNA-seq) from *t* = 0h to *t* = 10h can be simulated using:
+The `time` argument for simulations is either a single time or a list of time points. For example, a single-cell trajectory (not available from scRNA-seq) from *t* = 0h to *t* = 10h can be simulated using:
 
 ```python
 time = np.linspace(0,10,1000)

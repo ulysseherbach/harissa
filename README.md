@@ -72,6 +72,18 @@ Please see the [notebooks](https://github.com/ulysseherbach/harissa/tree/main/no
 - [Notebook 2](https://github.com/ulysseherbach/harissa/blob/main/notebooks/notebook2.ipynb): perform network inference from a small dataset with 4 genes;
 - [Notebook 3](https://github.com/ulysseherbach/harissa/blob/main/notebooks/notebook3.ipynb): compare two branching pathways with 4 genes from both ‘single-cell’ and ‘bulk’ viewpoints.
 
+## Numerical acceleration
+
+```python
+# Inference
+model.fit(data, use_numba=True)
+
+# Simulation
+sim = model.simulate(time, use_numba=True)
+```
+
+The `use_numba` option is not activated by default for simulations since it takes time to compile (~8s) but it is then much more efficient, so it is typically suited for large numbers of genes and/or cells.
+
 ## Dependencies
 
 The package depends on standard scientific libraries `numpy` and `scipy`. Optionally, it can load `numba` for accelerating the inference procedure (used by default) and the simulation procedure (not used by default). It also depends optionally on `matplotlib` and `networkx` for network visualization.

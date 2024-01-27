@@ -82,8 +82,12 @@ model.fit(data, use_numba=True)
 sim = model.simulate(time, use_numba=True)
 ```
 
-The `use_numba` option is not activated by default for simulations since it takes time to compile (~8s) but it is then much more efficient, so it is typically suited for large numbers of genes and/or cells.
+The `use_numba` option is not activated by default for simulations since it takes time to compile (~8s) but it is then much more efficient (~20 times faster) which is typically suited for large numbers of genes and/or cells.
 
 ## Dependencies
 
 The package depends on standard scientific libraries `numpy` and `scipy`. Optionally, it can load `numba` for accelerating the inference procedure (used by default) and the simulation procedure (not used by default). It also depends optionally on `matplotlib` and `networkx` for network visualization.
+
+## Citation
+
+If you use Harissa in your work, please cite [this paper](https://doi.org/10.1007/978-3-031-42697-1_7) (also available on [arXiv](https://doi.org/10.48550/arXiv.2309.05112)).

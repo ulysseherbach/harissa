@@ -247,7 +247,7 @@ def plot_network(inter, pos, width=1, height=1, scale=1, names=None,
                         c += 1
                 if c == 0:
                     b, c = 0, 0
-                    for k in I | J:
+                    for k in np.union1d(I, J):
                         if (k != k1):
                             b += pos[k]
                             c += 1

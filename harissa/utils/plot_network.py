@@ -25,9 +25,9 @@ def build_pos(inter, method=None):
             if np.abs(inter[i,j] != 0):
                 graph.add_edge(i, j)
     # Compute graph layout
+    p = np.random.normal(size=(G,2))
     if method is None:
-        p0 = np.random.normal(size=(G,2))
-        p = nx.kamada_kawai_layout(graph, pos=p0)
+        p = nx.kamada_kawai_layout(graph, pos=p)
     if method == 'graphviz':
         p = nx.nx_agraph.graphviz_layout(graph, prog='neato')
     # Return node positions
@@ -199,7 +199,7 @@ def plot_network(inter, pos, width=1, height=1, scale=1, names=None,
     G, G = inter.shape
     w, h = width/2.54, height/2.54 # Centimeters
     if names is None: names = [''] + ['{}'.format(k) for k in range(1,G)]
-    if vcolor is None: vcolor = ['#5C5C5C' for k in range(G)]
+    if vcolor is None: vcolor = G * ['#5C5C5C']
     if vdict is None: vdict = {}
     # Compute layout
     v = list(range(G))

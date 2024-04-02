@@ -27,10 +27,6 @@ class BurstyPDMP:
         # Thinning parameter
         self.thin_cst = None if thin_adapt else np.sum(K1[1:])
 
-        # CHECK
-
-        
-
     def kon(self, p):
         """
         Interaction function kon (off->on rate), given protein levels p.

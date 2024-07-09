@@ -19,7 +19,7 @@ The current version of Harissa has benefited from improvements introduced within
 Harissa can be installed using [pip](https://packaging.python.org/en/latest/tutorials/installing-packages/):
 
 ```bash
-pip install harissa==3.0.7
+pip install harissa==3.0.11
 ```
 
 This command will also check for all required dependencies (see below) and install them if necessary. If the installation is successful, all scripts in the [tests](https://github.com/ulysseherbach/harissa/tree/main/tests) folder should run smoothly (note that `network4.py` must be run before `test_binarize.py`).

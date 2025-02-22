@@ -4,9 +4,11 @@
 # Python
 *.pyc
 
-# Notebook
+# Other
 .ipynb_checkpoints
 
-# Other
-*.pdf
-*.html
+# Distribution
+dist
+
+# Local
+main.py

@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "harissa"
+dynamic = ["version"]
+dependencies = [
+    "numpy>=1.24",
+    "matplotlib>=3.4",
+]
+requires-python = ">=3.10"
+authors = [
+    {name = "Ulysse Herbach", email = "ulysse.herbach@inria.fr"},
+]
+description = "Tools for mechanistic gene network inference from single-cell data"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/ulysseherbach/harissa"
+
+[tool.hatch.build.targets.sdist]
+exclude = ["/.git*"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/harissa"]
+
+[tool.hatch.version]
+source = "vcs"
+raw-options = {local_scheme = "no-local-version"}
+
+[tool.ruff]
+select = ["E", "F", "W"]
+line-length = 79

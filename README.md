@@ -66,11 +66,11 @@ The inference algorithm specifically exploits time-course data, where single-cel
 
 ## Tutorial
 
-Please see the [notebooks](https://github.com/ulysseherbach/harissa/tree/main/notebooks) for introductory examples, or the [tests](https://github.com/ulysseherbach/harissa/tree/main/tests) folder for basic usage scripts. To get an idea of the main features, you can start by running the notebooks in order:
+Please see the [notebooks](https://github.com/ulysseherbach/harissa/tree/main/examples) for introductory examples, or the [tests](https://github.com/ulysseherbach/harissa/tree/main/tests) folder for basic usage scripts. To get an idea of the main features, you can start by running the notebooks in order:
 
-- [Notebook 1](https://github.com/ulysseherbach/harissa/blob/main/notebooks/notebook1.ipynb): simulate a basic repressilator network with 3 genes;
-- [Notebook 2](https://github.com/ulysseherbach/harissa/blob/main/notebooks/notebook2.ipynb): perform network inference from a small dataset with 4 genes;
-- [Notebook 3](https://github.com/ulysseherbach/harissa/blob/main/notebooks/notebook3.ipynb): compare two branching pathways with 4 genes from both ‘single-cell’ and ‘bulk’ viewpoints.
+- [Notebook 1](https://github.com/ulysseherbach/harissa/blob/main/examples/notebook1.ipynb): simulate a basic repressilator network with 3 genes;
+- [Notebook 2](https://github.com/ulysseherbach/harissa/blob/main/examples/notebook2.ipynb): perform network inference from a small dataset with 4 genes;
+- [Notebook 3](https://github.com/ulysseherbach/harissa/blob/main/examples/notebook3.ipynb): compare two branching pathways with 4 genes from both ‘single-cell’ and ‘bulk’ viewpoints.
 
 ## Numerical acceleration
 

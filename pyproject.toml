@@ -10,13 +10,13 @@ dependencies = [
     "scipy>=1.13",
     "numba>=0.60",
     "matplotlib>=3.8",
-    "networkx>=2.6",
+    "networkx>=3.3",
 ]
 requires-python = ">=3.10"
 authors = [
     {name = "Ulysse Herbach", email = "ulysse.herbach@inria.fr"},
 ]
-description = "Tools for mechanistic gene network inference from single-cell data"
+description = "Simulation and inference of gene regulatory networks based on transcriptional bursting"
 readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -26,6 +26,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/ulysseherbach/harissa"
+# Documentation = "https://ulysseherbach.github.io/harissa"
 
 [tool.hatch.build.targets.sdist]
 exclude = ["/.git*"]

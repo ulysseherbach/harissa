@@ -2,8 +2,8 @@
 Data processing
 """
 import numpy as np
-from ..model import NetworkModel
-from ..inference import infer_proteins
+from harissa.model import NetworkModel
+from harissa.inference import infer_proteins
 
 def binarize(data):
     """

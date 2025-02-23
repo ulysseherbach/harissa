@@ -14,15 +14,15 @@ class ApproxODE:
         D0, D1 = d[0], d[1]
         K0, K1, B = a[0]*d[0], a[1]*d[0], a[2]
         S1 = D0*D1*a[2]/K1 # Normalize protein scales
-        types = [('D0','float'), ('D1','float'), ('S1','float'),
-            ('K0','float'), ('K1','float'), ('B','float')]
+        types = [('D0', 'float'), ('D1', 'float'), ('S1', 'float'),
+            ('K0', 'float'), ('K1', 'float'), ('B', 'float')]
         plist = [(D0[i], D1[i], S1[i], K0[i], K1[i], B[i]) for i in range(G)]
         self.param = np.array(plist, dtype=types)
         # Network parameters
         self.basal = basal
         self.inter = inter
         # Default state
-        types = [('M','float'), ('P','float')]
+        types = [('M', 'float'), ('P', 'float')]
         self.state = np.array([(0,0) for i in range(G)], dtype=types)
         # Simulation parameter
         self.euler_step = 1e-3/np.max(D1)
@@ -60,7 +60,7 @@ class ApproxODE:
         dt = self.euler_step
         if np.size(timepoints) > 1:
             dt = np.min([dt, np.min(timepoints[1:] - timepoints[:-1])])
-        types = [('M','float64'), ('P','float64')]
+        types = [('M', 'float64'), ('P', 'float64')]
         sim = []
         T, c = 0, 0
         # Core loop for simulation and recording
@@ -74,7 +74,8 @@ class ApproxODE:
         # Display info about steps
         if verb:
             if c > 0:
-                print('ODE simulation used {} steps '.format(c)
-                    + '(step size = {:.5f})'.format(dt))
-            else: print('ODE simulation used no step')
+                print(f"ODE simulation used {c} steps "
+                    + f"(step size = {dt:.5f})")
+            else:
+                print("ODE simulation used no step")
         return np.array(sim)

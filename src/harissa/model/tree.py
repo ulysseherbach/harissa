@@ -15,15 +15,19 @@ def loop_erasure(path):
     """
     Compute the loop erasure of a given path.
     """
-    if path[0] == path[-1]: return [path[0]]
-    else: i = np.max(np.arange(len(path))*(np.array(path)==path[0]))
-    if path[i+1] == path[-1]: return [path[0], path[i+1]]
-    else: return [path[0]] + loop_erasure(path[i+1:])
+    if path[0] == path[-1]:
+        return [path[0]]
+    else:
+        i = np.max(np.arange(len(path))*(np.array(path)==path[0]))
+    if path[i+1] == path[-1]:
+        return [path[0], path[i+1]]
+    else:
+        return [path[0]] + loop_erasure(path[i+1:])
 
 def random_tree(a):
     """
     Generate a random spanning tree rooted in node 0 from the uniform
-    distribution with weights given by matrix a (using Wilson's method).
+    distribution with weights given by matrix a (using Wilson’s method).
     """
     n = a[0].size
     tree = [[] for i in range(n)]
@@ -42,7 +46,8 @@ def random_tree(a):
             v.add(path[i])
             r.remove(path[i])
             tree[path[i+1]].append(path[i])
-    for i in range(n): tree[i].sort()
+    for i in range(n):
+        tree[i].sort()
     return tuple([tuple(tree[i]) for i in range(n)])
 
 # Main function
@@ -55,8 +60,10 @@ def tree(n_genes, weight=None):
     G = n_genes + 1
     if weight is not None:
         if weight.shape != (G,G):
-            raise ValueError('Weight must be n_genes+1 by n_genes+1')
-    else: weight = np.ones((G,G))
+            raise ValueError(("weight must have shape "
+                "(n_genes + 1, n_genes + 1)"))
+    else:
+        weight = np.ones((G,G))
     # Enforcing the proper structure
     weight[:,0] = 0
     weight = weight - np.diag(np.diag(weight))

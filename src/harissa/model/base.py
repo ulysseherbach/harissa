@@ -2,9 +2,9 @@
 Main class for network inference and simulation
 """
 import numpy as np
-from .cascade import cascade
-from .tree import tree
-from ..inference import infer_kinetics, infer_proteins
+from harissa.model.cascade import cascade
+from harissa.model.tree import tree
+from harissa.inference import infer_kinetics, infer_proteins
 
 class NetworkModel:
     """
@@ -42,7 +42,8 @@ class NetworkModel:
         # Kinetic values for each gene
         a = np.ones((3,G))
         for g in range(1,G):
-            if verb: print(f'Calibrating gene {g}...')
+            if verb:
+                print(f"Calibrating gene {g}...")
             x = data[:,g]
             at, b = infer_kinetics(x, times, verb=verb)
             a[0,g] = np.min(at)
@@ -73,8 +74,10 @@ class NetworkModel:
         y = infer_proteins(x, a)
         self.y = y
         # Import necessary modules
-        if use_numba: from ..inference.network_fast import infer_network
-        else: from ..inference.network import infer_network
+        if use_numba:
+            from harissa.inference.network_fast import infer_network
+        else:
+            from harissa.inference.network import infer_network
         # Inference procedure
         theta = infer_network(x, y, a, c, l, tol, verb)
         # Build the results
@@ -97,23 +100,30 @@ class NetworkModel:
         check = ((self.a is None) + (self.d is None)
                 + (self.basal is None) + (self.inter is None))
         # Prepare time points
-        if check: raise ValueError('Model parameters not yet specified')
-        if np.size(t) == 1: t = np.array([t])
+        if check:
+            raise ValueError("Model parameters not yet specified")
+        if np.size(t) == 1:
+            t = np.array([t])
         if np.any(t != np.sort(t)):
-            raise ValueError('Time points must appear in increasing order')
+            raise ValueError("Time points must appear in increasing order")
         # Import necessary modules
-        from ..simulation.base import Simulation
-        if use_numba: from ..simulation.pdmp_fast import BurstyPDMP
-        else: from ..simulation.pdmp import BurstyPDMP
+        from harissa.simulation.base import Simulation
+        if use_numba:
+            from harissa.simulation.pdmp_fast import BurstyPDMP
+        else:
+            from harissa.simulation.pdmp import BurstyPDMP
         a = self.a
         d = self.d
         basal = self.basal
         inter = self.inter
         network = BurstyPDMP(a, d, basal, inter)
         # Burnin simulation without stimulus
-        if M0 is not None: network.state['M'][1:] = M0[1:]
-        if P0 is not None: network.state['P'][1:] = P0[1:]
-        if burnin is not None: network.simulation([burnin], verb)
+        if M0 is not None:
+            network.state['M'][1:] = M0[1:]
+        if P0 is not None:
+            network.state['P'][1:] = P0[1:]
+        if burnin is not None:
+            network.simulation([burnin], verb)
         # Activate the stimulus
         network.state['P'][0] = 1
         # Final simulation with stimulus
@@ -133,23 +143,29 @@ class NetworkModel:
         check = ((self.a is None) + (self.d is None)
                 + (self.basal is None) + (self.inter is None))
         # Prepare time points
-        if check: raise ValueError('Model parameters not specified yet')
-        if self.inter is None: print('Interactions must be specified')
-        if np.size(t) == 1: t = np.array([t])
+        if check:
+            raise ValueError("Model parameters not specified yet")
+        if self.inter is None:
+            print("Interactions must be specified")
+        if np.size(t) == 1:
+            t = np.array([t])
         if np.any(t != np.sort(t)):
-            raise ValueError('Time points must appear in increasing order')
+            raise ValueError("Time points must appear in increasing order")
         # Import necessary modules
-        from ..simulation.base import Simulation
-        from ..simulation.ode import ApproxODE
+        from harissa.simulation.base import Simulation
+        from harissa.simulation.ode import ApproxODE
         a = self.a
         d = self.d
         basal = self.basal
         inter = self.inter
         network = ApproxODE(a, d, basal, inter)
         # Burnin simulation without stimulus
-        if M0 is not None: network.state['M'][1:] = M0[1:]
-        if P0 is not None: network.state['P'][1:] = P0[1:]
-        if burnin is not None: network.simulation([burnin], verb)
+        if M0 is not None:
+            network.state['M'][1:] = M0[1:]
+        if P0 is not None:
+            network.state['P'][1:] = P0[1:]
+        if burnin is not None:
+            network.simulation([burnin], verb)
         # Activate the stimulus
         network.state['P'][0] = 1
         # Final simulation with stimulus
@@ -169,8 +185,8 @@ class Cascade(NetworkModel):
         # New network parameters
         basal, inter = cascade(n_genes)
         if autoactiv:
-            for i in range(1,n_genes+1):
-                inter[i,i] = 5
+            for i in range(1, n_genes + 1):
+                inter[i, i] = 5
         self.basal = basal
         self.inter = inter
 
@@ -184,7 +200,7 @@ class Tree(NetworkModel):
         # New network parameters
         basal, inter = tree(n_genes)
         if autoactiv:
-            for i in range(1,n_genes+1):
-                inter[i,i] = 5
+            for i in range(1, n_genes + 1):
+                inter[i, i] = 5
         self.basal = basal
         self.inter = inter

@@ -13,8 +13,10 @@ def estim_gamma(x):
     """
     m = np.mean(x)
     v = np.var(x)
-    if v == 0: return 0, 1
-    else: return m*m/v, m/v
+    if v == 0:
+        return 0, 1
+    else:
+        return m*m/v, m/v
 
 def estim_gamma_poisson(x):
     """
@@ -23,12 +25,15 @@ def estim_gamma_poisson(x):
     """
     m1 = np.mean(x)
     m2 = np.mean(x*(x-1))
-    if m1 == 0: return 0, 1
+    if m1 == 0:
+        return 0, 1
     r = m2 - m1**2
-    if r > 0: b = m1/r
+    if r > 0:
+        b = m1/r
     else:
         v = np.var(x)
-        if v == 0: return 0, 1
+        if v == 0:
+            return 0, 1
         b = m1/v
     a = m1 * b
     return a, b
@@ -41,8 +46,8 @@ def transform(x):
     """
     a, b = estim_gamma_poisson(x)
     if not (a > 0 and b > 0):
-        print(('Warning: you should check whether x is not '
-            'almost zero (sum(x) = {}).').format(np.sum(x)))
+        print(("Warning: you should check whether x is not "
+            f"almost zero (sum(x) = {np.sum(x)})."))
         a, b = np.abs(a), np.abs(b)
     return (a + x)/(b + 1)
 
@@ -53,8 +58,10 @@ def infer_kinetics(x, times, tol=1e-5, max_iter=100, verb=False):
 
     Parameters
     ----------
-    x[k] = gene expression in cell k
-    times[k] = time point of cell k
+    x : ndarray
+        `x[k]` is the gene expression of cell `k`
+    times : ndarray
+        `times[k]` is the time point of cell `k`
     """
     t = np.sort(list(set(times)))
     m = t.size
@@ -82,7 +89,8 @@ def infer_kinetics(x, times, tol=1e-5, max_iter=100, verb=False):
                 h = p1 - n[i]*polygamma(1, a[i])
                 da[i] = -d/h
         anew = a + da
-        if np.sum(anew < 0) == 0: a[:] = anew
+        if np.sum(anew < 0) == 0:
+            a[:] = anew
         else:
             max_test = 5
             test = 0
@@ -90,26 +98,33 @@ def infer_kinetics(x, times, tol=1e-5, max_iter=100, verb=False):
             while (np.sum(a + da < 0) > 0) and (test < max_test):
                 da *= 0.5
                 test += 1
-            if test < max_test: a[:] = a + da
-            else: print('Warning: parameter a not improved')
+            if test < max_test:
+                a[:] = a + da
+            else:
+                print("Warning: parameter a not improved")
         if np.sum(a == 0) == 0:
             b = np.sum(n*a)/sx
-        else: b = 1
+        else:
+            b = 1
         c = np.max(np.abs(da))
         k += 1
     if (k == max_iter) and (c > tol):
-        # print('Warning: bad convergence (b = {})'.format(b))
+        # print(f"Warning: bad convergence (b = {b})")
         a, b = a/b, 1
-    # if verb: print('Estimation done in {} iterations'.format(k))
-    if np.sum(a < 0) > 0: print('WARNING: a < 0')
-    if b < 0: print('WARNING: b < 0')
-    if np.all(a == 0): print('WARNING: a == 0')
+    if verb:
+        print(f"Estimation done in {k} iterations")
+    if np.sum(a < 0) > 0:
+        print("WARNING: a < 0")
+    if b < 0:
+        print("WARNING: b < 0")
+    if np.all(a == 0):
+        print("WARNING: a == 0")
     # if k > 20 and np.max(a/b) > 2: print(k, np.max(a/b))
     return a, b
-    
+
 
 # Tests
-if __name__=='__main__':
+if __name__ == '__main__':
     x = np.array([2,0,10,5,0,7])
     times = np.array([0,0,0,1,1,1])
     a, b = infer_kinetics(x, times, verb=True)

@@ -143,17 +143,19 @@ def infer_network(x, y, a, c, l, tol, verb):
     theta0 = np.zeros((G,G))
     # Optimization parameters
     params = {'method': 'L-BFGS-B'}
-    if tol is not None: params['tol'] = tol
+    if tol is not None:
+        params['tol'] = tol
     # Inference routine
     for t, time in enumerate(times):
         res = minimize(objective, theta0.reshape(G**2),
                 args=(theta0, x[k==time], y[k==time], a, c, d, l, t),
                 jac=grad_theta, **params)
         if not res.success:
-            print(f'Warning: maximization failed (time {t})')
+            print(f"Warning: maximization failed (time {t})")
         # Update theta0
         theta0 = res.x.reshape((G,G))
         # Store theta at time t
         theta[t] = theta0
-    if verb: print(f'Fitted theta in {res.nit} iterations')
+    if verb:
+        print(f"Fitted theta in {res.nit} iterations")
     return theta

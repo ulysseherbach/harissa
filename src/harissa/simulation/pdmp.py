@@ -125,9 +125,8 @@ class BurstyPDMP:
         if verb:
             ctot = c0 + c1
             if ctot > 0:
-                print(f"Exact simulation used {ctot} jumps "
-                    + f"including {c0} phantom jumps "
-                    + f"({100*c0/ctot:.2f}%)")
+                print((f"Exact simulation used {ctot} jumps "
+                    f"including {c0} phantom jumps ({100*c0/ctot:.2f}%)"))
             else:
                 print("Exact simulation used no jump")
         return np.array(sim)

@@ -151,9 +151,8 @@ def simulate(timepoints, basal, inter, K0, K1, B, D0, D1, S1, M, P,
     if verb:
         ctot = c0 + c1
         if ctot > 0:
-            print(f"Exact simulation used {ctot} jumps "
-                + f"including {c0} phantom jumps "
-                + f"({100*c0/ctot:.2f}%)")
+            print((f"Exact simulation used {ctot} jumps "
+                f"including {c0} phantom jumps ({int(100*c0/ctot)}%)"))
         else:
             print("Exact simulation used no jump")
     return states

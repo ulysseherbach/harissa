@@ -87,7 +87,7 @@ class BurstyBase:
         h = np.exp(- x**2 / (2 * s**2)) / (np.sqrt(2 * np.pi) * s)
         # Post-burst part of the distribution
         # # Option 1: gamma-mixture formula
-        # g = r1 * r2 * np.exp(- b * e0 * x) * hyp1f1(k + 1, 2, r1 * x)
+        # g = r1 * r2 * np.exp(- b * e0 * x) * hyp1f1(k/d + 1, 2, r1 * x)
         # Option 2: using Kummer's transformation
         g = r1 * r2 * np.exp(- b * x) * hyp1f1(1 - k/d, 2, -r1 * x)
         # Overall distribution

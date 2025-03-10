@@ -1,5 +1,5 @@
 """
-Reduced/Hybrid/Bursty model for a single gene with no feedback
+Reduced/Hybrid/Bursty model for a single gene with no feedback.
 """
 import numpy as np
 from scipy.special import hyp1f1

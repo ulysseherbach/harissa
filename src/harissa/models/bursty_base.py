@@ -77,10 +77,10 @@ class BurstyBase:
         x = x - xt
         # Scaling factors
         e0 = np.exp(d * t)
-        e1 = np.exp(k * d * t)
+        e1 = np.exp(k * t)
         e1[t == 0] = 0 # Discarded
         r1 = b * (e0 - 1)
-        r2 = k * (x >= 0) / (e1 - 1)
+        r2 = (k/d) * (x >= 0) / (e1 - 1)
         # Probability that no burst occurred
         w = np.exp(- k * t)
         # Pre-burst part of the distribution (regularized)
@@ -89,7 +89,7 @@ class BurstyBase:
         # # Option 1: gamma-mixture formula
         # g = r1 * r2 * np.exp(- b * e0 * x) * hyp1f1(k + 1, 2, r1 * x)
         # Option 2: using Kummer's transformation
-        g = r1 * r2 * np.exp(- b * x) * hyp1f1(1 - k, 2, -r1 * x)
+        g = r1 * r2 * np.exp(- b * x) * hyp1f1(1 - k/d, 2, -r1 * x)
         # Overall distribution
         p = w * h + (1 - w) * g
         if t.size == 1:

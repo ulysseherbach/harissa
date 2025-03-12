@@ -24,16 +24,16 @@ fig.savefig(result_path + "traj.pdf", bbox_inches='tight')
 
 # Time-dependent distribution
 x = np.linspace(0, 3, 1000)
-init_state = 1
-time = np.linspace(0, 1.6, 3)
-p = model.distribution(x, time, init_state)
+x0 = 1
+time = 0, 1, 5
+p = model.distribution(x, x0, time)
 
 # Confirm analytical formula
 t_simul = time[1]
 n_cells = 10000
 cell_pop = np.zeros(n_cells)
 for k in range(n_cells):
-    sim = model.simulate(t_simul, init_state)
+    sim = model.simulate(t_simul, x0)
     cell_pop[k] = sim.x[0]
 
 # Show time-dependent distribution

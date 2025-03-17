@@ -23,7 +23,7 @@ plt.ylim(0)
 fig.savefig(result_path + "traj.pdf", bbox_inches='tight')
 
 # Time-dependent distribution
-x = np.linspace(0, 3, 1000)
+x = np.linspace(0, 3, 10000)
 x0 = 1
 time = 0, 1, 5
 p = model.distribution(x, x0, time)
@@ -34,13 +34,13 @@ n_cells = 10000
 cell_pop = np.zeros(n_cells)
 for k in range(n_cells):
     sim = model.simulate(t_simul, x0)
-    cell_pop[k] = sim.x[0]
+    cell_pop[k] = sim.x
 
 # Show time-dependent distribution
 fig = plt.figure(figsize=(8,3))
 for k, t in enumerate(time):
     plt.plot(x, p[k], label=f"t = {t}")
-    print(f"t = {t} -> non-zeros: {np.count_nonzero(p[k])}")
+    print(f"t = {t} -> non-zeros: {np.count_nonzero(p[k])}/{x.size}")
 plt.hist(cell_pop, density=True, bins=100, color='lightgray', zorder=0,
     label=f"Simulation (t = {t_simul})")
 plt.xlim(x[0], x[-1])

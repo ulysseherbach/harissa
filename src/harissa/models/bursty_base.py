@@ -58,9 +58,13 @@ class BurstyBase:
             traj[i] = x[k] * np.exp(- degradation_rate * dt)
         if verb:
             print(f'Simulation generated {n} jumps.')
+        # Simplify scalar case
+        if time.size == 1:
+            time = time.reshape(())
+            traj = traj.reshape(())
         return Simulation(time, traj)
 
-    def distribution(self, x, x0, time, smooth=1e-2, discrete=False):
+    def distribution(self, x, x0, time, smooth=1e-5, discrete=False):
         """
         Time-dependent conditional distribution with respect to initial
         state `x0` at time 0, interpreted as a probability kernel p(x|x0)
@@ -125,5 +129,5 @@ if __name__ == '__main__':
     x = np.linspace(0, 2, 4)
     time = 0, 1, 2
     x0 = 0, 0.1
-    p = model.distribution(x, x0, time, discrete=True)
+    p = model.distribution(x, x0, time, smooth=1e-2, discrete=True)
     print(p)

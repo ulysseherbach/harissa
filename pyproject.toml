@@ -38,6 +38,6 @@ packages = ["src/harissa"]
 source = "vcs"
 raw-options = {local_scheme = "no-local-version"}
 
-[tool.ruff]
+[tool.ruff.lint]
 select = ["E", "F", "W"]
-line-length = 79
+ignore = ["E402", "E741"]

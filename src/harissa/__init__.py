@@ -1,9 +1,5 @@
 """
-Harissa
-=======
-
-Tools for mechanistic gene network inference from single-cell data
-------------------------------------------------------------------
+Tools for mechanistic gene network inference from single-cell data.
 
 Mechanistic model-based gene network inference using
 a self-consistent proteomic field (SCPF) approximation.
@@ -19,9 +15,9 @@ Author: Ulysse Herbach (ulysse.herbach@inria.fr)
 from importlib.metadata import version as _version
 from harissa.model import NetworkModel, Cascade, Tree
 
-__all__ = ["NetworkModel", "Cascade", "Tree"]
+__all__ = ['Cascade', 'NetworkModel', 'Tree']
 
 try:
-    __version__ = _version("harissa")
+    __version__ = _version('harissa')
 except Exception:
-    __version__ = "unknown version"
+    __version__ = 'unknown version'

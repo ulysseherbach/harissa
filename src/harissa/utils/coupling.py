@@ -184,7 +184,7 @@ if __name__ == '__main__':
     p1, r = sinkhorn_bridge(k, mu, nu, verb=True)
 
     # Option 2: define from reference coupling
-    p2 = entropic_coupling(mu, nu, k, verb=True)
+    p2 = entropic_coupling(mu, nu, p_ref, verb=True)
 
     # Output should coincide
     print(f'Coincide: {np.allclose(p1, p2) and np.allclose(r, p_ref)}')

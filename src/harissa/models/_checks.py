@@ -1,7 +1,6 @@
-"""
-Various checks for function parameters within the API.
-"""
+"""Various checks for function parameters within the API."""
 import numpy as np
+
 
 def _check_time_points(time):
     """
@@ -41,6 +40,7 @@ def _check_state_array(state):
     if np.any(state < 0):
         raise ValueError("States must be nonnegative.")
     return state
+
 
 # Tests
 if __name__ == '__main__':

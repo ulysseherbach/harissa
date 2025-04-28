@@ -29,7 +29,7 @@ Homepage = "https://github.com/ulysseherbach/harissa"
 # Documentation = "https://ulysseherbach.github.io/harissa"
 
 [tool.hatch.build.targets.sdist]
-exclude = ["/.git*"]
+exclude = ["/.*"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/harissa"]

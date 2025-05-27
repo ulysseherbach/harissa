@@ -1,6 +1,4 @@
-"""
-Plotting networks
-"""
+"""Plotting networks."""
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -11,10 +9,9 @@ from matplotlib.patches import (Circle, Rectangle, FancyArrowPatch,
 activ = plt.get_cmap('tab10')(2)
 inhib = plt.get_cmap('tab10')(3)
 
+
 def build_pos(inter, method=None):
-    """
-    Compute node layout given an interaction matrix.
-    """
+    """Compute node layout given an interaction matrix."""
     G = inter.shape[0]
     # Define graph
     graph = nx.Graph()
@@ -25,20 +22,21 @@ def build_pos(inter, method=None):
             if np.abs(inter[i,j] != 0):
                 graph.add_edge(i, j)
     # Compute graph layout
-    p = np.random.normal(size=(G,2))
+    p = np.random.normal(size=(G, 2))
     if method is None:
         p = nx.kamada_kawai_layout(graph, pos=p)
     if method == 'graphviz':
         p = nx.nx_agraph.graphviz_layout(graph, prog='neato')
     # Return node positions
-    pos = np.zeros((G,2))
+    pos = np.zeros((G, 2))
     for k in range(0,G):
-        pos[k,:] = p[k]
+        pos[k, :] = p[k]
     scale = 1 if method is None else 2/(pos.max()-pos.min())
     center = pos.mean(axis=0) if G > 0 else 0
     return scale * (pos - center)
 
-#### Plotting functions ####
+
+# ### Plotting functions ###
 
 def node(k, ax, pos, name, scale=1., color=None, fontsize=None, nodesize=1.):
     if color is None:
@@ -67,7 +65,7 @@ def link(k1, k2, ax, pos, weight, bend=0., scale=1., nodesize=1., alpha=None):
     if weight > 0:
         style = ArrowStyle('Simple', tail_width=1.1*scale,
             head_width=3.5*scale, head_length=5*scale)
-        arrow = FancyArrowPatch((x1,y1), (x2,y2), arrowstyle=style,
+        arrow = FancyArrowPatch((x1, y1), (x2, y2), arrowstyle=style,
         shrinkA=shrink, shrinkB=shrink, fc=activ, lw=0, zorder=0,
         connectionstyle=f'arc3,rad={bend}',
         clip_on=False, alpha=alpha)
@@ -77,7 +75,7 @@ def link(k1, k2, ax, pos, weight, bend=0., scale=1., nodesize=1., alpha=None):
     if weight < 0:
         style = ArrowStyle('Simple', tail_width=1.1*scale,
             head_width=0, head_length=1e-9*scale)
-        arrow = FancyArrowPatch((x1,y1), (x2,y2), arrowstyle=style,
+        arrow = FancyArrowPatch((x1, y1), (x2, y2), arrowstyle=style,
         shrinkA=shrink, shrinkB=shrink, fc=inhib, lw=0, zorder=0,
         connectionstyle=f'arc3,rad={bend}',
         clip_on=False, alpha=alpha)
@@ -86,8 +84,8 @@ def link(k1, k2, ax, pos, weight, bend=0., scale=1., nodesize=1., alpha=None):
         r = 0.125*nodesize
         u = pos[k2] - pos[k1]
         u0 = u/np.sqrt(np.sum(u**2))
-        x0 = (pos[k1,0] + r*u0[0])*scale
-        y0 = (pos[k1,1] + r*u0[1])*scale
+        x0 = (pos[k1, 0] + r*u0[0])*scale
+        y0 = (pos[k1, 1] + r*u0[1])*scale
         dx = (u[0] - 2*r*u0[0])*scale
         dy = (u[1] - 2*r*u0[1])*scale
 
@@ -96,7 +94,7 @@ def link(k1, k2, ax, pos, weight, bend=0., scale=1., nodesize=1., alpha=None):
         x1, y1 = x0 + dx, y0 + dy
         d = np.sqrt(dx**2 + dy**2)
         u = np.array([dx, dy])/d
-        v = np.array([dy,-dx])/d
+        v = np.array([dy, -dx])/d
 
         x = x1 + 0.2*h_height*u[0] + 0.5*h_width*v[0]
         y = y1 + 0.2*h_height*u[1] + 0.5*h_width*v[1]
@@ -114,7 +112,7 @@ def link(k1, k2, ax, pos, weight, bend=0., scale=1., nodesize=1., alpha=None):
         x3 = x2 + np.cos(theta)*(x-x2) - np.sin(theta)*(y-y2)
         y3 = y2 + np.sin(theta)*(x-x2) + np.cos(theta)*(y-y2)
 
-        head = Rectangle((x3,y3), h_width, h_height, clip_on=False,
+        head = Rectangle((x3, y3), h_width, h_height, clip_on=False,
             angle=angle, fc=inhib, zorder=0, alpha=alpha)
         ax.add_artist(head)
 
@@ -218,9 +216,8 @@ def is_stimulus_leaf(gene, inter):
 #### Main function ####
 
 def plot_network(inter, pos, width=1., height=1., scale=1., names=None,
-    vdict=None, tol=None, root=False, axes=None, nodes=None, n0=True,
-    file=None, verb=False, fontsize=None, vcolor=None, nodesize=1.,
-    bend=0.14, bend_all=False, alpha=None,
+    vdict=None, axes=None, nodes=None, file=None, fontsize=None, vcolor=None,
+    nodesize=1., bend=0.14, bend_all=False, alpha=None,
     hide_isolated_genes=False, hide_stimulus_leaves=False):
     """
     Plot a gene regulatory network.
@@ -235,7 +232,7 @@ def plot_network(inter, pos, width=1., height=1., scale=1., names=None,
     G, G = inter.shape
     w, h = width/2.54, height/2.54 # Centimeters
     if names is None:
-        names = [""] + [f"{k}" for k in range(1,G)]
+        names = [''] + [f'{k}' for k in range(1, G)]
     if vcolor is None:
         vcolor = G * ['#5C5C5C']
     if vdict is None:
@@ -260,29 +257,29 @@ def plot_network(inter, pos, width=1., height=1., scale=1., names=None,
     ax_pos = ax.get_position()
     plt.xlim([-w*ax_pos.width/2, w*ax_pos.width/2])
     plt.ylim([-h*ax_pos.height/2, h*ax_pos.height/2])
-    scale = scale * np.min([ax_pos.width,ax_pos.height])
+    scale *= np.min([ax_pos.width, ax_pos.height])
     # Decide which genes to show
     v = set(range(G))
     e = set(zip(*inter.nonzero()))
     if G == 0:
         show_empty_plot_warning()
     if hide_isolated_genes:
-        for k in range(1,G):
+        for k in range(1, G):
             if is_isolated(k, inter):
                 v.discard(k)
-                e.discard((k,k))
+                e.discard((k, k))
     if hide_stimulus_leaves:
         for k in range(1,G):
             if is_stimulus_leaf(k, inter):
                 v.discard(k)
-                e.discard((0,k))
+                e.discard((0, k))
     # Draw nodes
     for k in v:
         node(k, ax, pos, names[k], scale, fontsize=fontsize, color=vcolor[k],
             nodesize=nodesize)
     # Draw links
     for k1, k2 in e:
-        weight = inter[k1,k2]
+        weight = inter[k1, k2]
         if k1 != k2:
             if (k2, k1) in e:
                 link(k1, k2, ax, pos, weight, bend, scale, nodesize=nodesize,
@@ -309,12 +306,12 @@ def plot_network(inter, pos, width=1., height=1., scale=1., names=None,
                 v = np.array(v)
             d = np.sqrt(np.sum(v**2))
             if d > 0:
-                v = v/d
+                v /= d
             else:
-                v = np.array([0,1])
+                v = np.array([0, 1])
             link_auto(k1, ax, pos, weight, v, scale, nodesize=nodesize,
                 alpha=alpha)
     if file is None:
-        file = "network.pdf"
+        file = 'network.pdf'
     if axes is None:
         fig.savefig(file, bbox_inches='tight')

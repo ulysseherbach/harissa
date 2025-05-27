@@ -53,6 +53,7 @@ def node(k, ax, pos, name, scale=1., color=None, fontsize=None, nodesize=1.):
     ax.text(x, y - 0.007*scale, name, color=color, fontsize=fontsize,
         zorder=4, horizontalalignment='center', verticalalignment='center')
 
+
 def link(k1, k2, ax, pos, weight, bend=0., scale=1., nodesize=1., alpha=None):
     # Node coordinates
     x1, y1 = pos[k1,0]*scale, pos[k1,1]*scale
@@ -116,13 +117,14 @@ def link(k1, k2, ax, pos, weight, bend=0., scale=1., nodesize=1., alpha=None):
             angle=angle, fc=inhib, zorder=0, alpha=alpha)
         ax.add_artist(head)
 
+
 def link_auto(k, ax, pos, weight, v=None, scale=1., nodesize=1., alpha=None):
     # Node coordinates
     x0, y0 = pos[k,0]*scale, pos[k,1]*scale
 
     # Orientation
     if v is None:
-        v = np.array([1,0])
+        v = np.array([1, 0])
         v /= np.sqrt(np.sum(v**2))
 
     if v[0] > 0:
@@ -191,8 +193,10 @@ def link_auto(k, ax, pos, weight, v=None, scale=1., nodesize=1., alpha=None):
             zorder=0, clip_on=False)
         ax.add_artist(head)
 
+
 def show_empty_plot_warning():
     print("Warning: nothing to show in this plot")
+
 
 def is_isolated(gene, inter):
     """Test whether a gene is isolated."""
@@ -201,6 +205,7 @@ def is_isolated(gene, inter):
     targets = np.nonzero(inter[gene,others])[0]
     factors = np.nonzero(inter[others,gene])[0]
     return (targets.size == 0) and (factors.size == 0)
+
 
 def is_stimulus_leaf(gene, inter):
     """Test whether a gene is a leaf of the stimulus."""
@@ -213,7 +218,8 @@ def is_stimulus_leaf(gene, inter):
     else:
         return (targets.size == 0) and (factors[0] == 0)
 
-#### Main function ####
+
+# ### Main function ###
 
 def plot_network(inter, pos, width=1., height=1., scale=1., names=None,
     vdict=None, axes=None, nodes=None, file=None, fontsize=None, vcolor=None,
@@ -292,7 +298,7 @@ def plot_network(inter, pos, width=1., height=1., scale=1., names=None,
             if v is None:
                 b, c = 0, 0
                 for k in range(G):
-                    if (k != k1) and (((k,k1) in e) or ((k1, k) in e)):
+                    if (k != k1) and (((k, k1) in e) or ((k1, k) in e)):
                         b += pos[k]
                         c += 1
                 if c == 0:
@@ -301,7 +307,7 @@ def plot_network(inter, pos, width=1., height=1., scale=1., names=None,
                         if (k != k1):
                             b += pos[k]
                             c += 1
-                v = pos[k1] - b/c
+                v = pos[k1] - b/c if c > 0 else pos[k1]
             else:
                 v = np.array(v)
             d = np.sqrt(np.sum(v**2))

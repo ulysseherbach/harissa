@@ -3,42 +3,45 @@ import numpy as np
 
 
 def _check_time_points(time):
-    """
-    Check time points for trajectory simulations or distributions.
-    """
+    """Check time points for trajectory simulations or distributions."""
     time = np.array(time, dtype=float, ndmin=1)
     if np.ndim(time) > 1:
-        raise ValueError("Time points should either be scalar or 1D array.")
+        msg = 'Time points should either be scalar or 1D array.'
+        raise ValueError(msg)
     if np.any(time != np.sort(time)):
-        raise ValueError("Time points must be given in increasing order.")
+        msg = 'Time points must be given in increasing order.'
+        raise ValueError(msg)
     if np.any(time < 0):
-        raise ValueError("Time points must be nonnegative.")
+        msg = 'Time points must be nonnegative.'
+        raise ValueError(msg)
     return time
 
+
 def _check_init_state(init_state, shape=None):
-    """
-    Check initial state for trajectory simulations.
-    """
+    """Check initial state for trajectory simulations."""
     init_state = np.array(init_state, dtype=float)
     if np.any(init_state < 0):
-        raise ValueError("Initial state must be nonnegative.")
+        msg = 'Initial state must be nonnegative.'
+        raise ValueError(msg)
     # Check for particular shape
     if (shape is not None) and (np.shape(init_state) != shape):
         if shape == ():
-            raise ValueError("Initial state must be a scalar value.")
-        else:
-            raise ValueError(f"Initial state must have shape {shape}.")
+            msg = 'Initial state must be a scalar value.'
+            raise ValueError(msg)
+        msg = f'Initial state must have shape {shape}.'
+        raise ValueError(msg)
     return init_state
 
+
 def _check_state_array(state):
-    """
-    Check array of scalar states for distributions.
-    """
+    """Check array of scalar states for distributions."""
     state = np.array(state, dtype=float)
     if np.ndim(state) > 1:
-        raise ValueError("States should either be scalar or 1D array.")
+        msg = 'States should either be scalar or 1D array.'
+        raise ValueError(msg)
     if np.any(state < 0):
-        raise ValueError("States must be nonnegative.")
+        msg = 'States must be nonnegative.'
+        raise ValueError(msg)
     return state
 
 

@@ -1,24 +1,25 @@
-"""
-Reduced/Hybrid/Bursty model for a single gene with no feedback.
-"""
+"""Reduced/Hybrid/Bursty model for a single gene with no feedback."""
 import numpy as np
 from scipy.special import hyp1f1
 from harissa.models._checks import (_check_time_points, _check_init_state,
     _check_state_array)
 
+
 class Simulation:
-    """
-    Basic object to store simulations.
-    """
+    """Basic object to store simulations."""
+
     def __init__(self, t, x):
-        self.t = t # Time points
-        self.x = x # Proteins or mRNA
+        self.t = t  # Time points
+        self.x = x  # Proteins or mRNA
+
 
 class BurstyBase:
     """
     Reduced-Hybrid-Bursty model for a single gene with no feedback.
+
     NB: For this model the propagator is available in analytical form.
     """
+
     def __init__(self,
         burst_size=1.0,
         burst_frequency=1.0,
@@ -29,9 +30,7 @@ class BurstyBase:
         self.degradation_rate = degradation_rate
 
     def simulate(self, time, init_state=0.0, verb=False):
-        """
-        Exact simulation of the model (extracted at given time points).
-        """
+        """Exact simulation (extracted at given time points)."""
         burst_size = self.burst_size
         burst_frequency = self.burst_frequency
         degradation_rate = self.degradation_rate
@@ -66,9 +65,10 @@ class BurstyBase:
 
     def distribution(self, x, x0, time, smooth=1e-5, discrete=False):
         """
-        Time-dependent conditional distribution with respect to initial
-        state `x0` at time 0, interpreted as a probability kernel p(x|x0)
-        for each given time and initial state.
+        Time-dependent conditional distribution with respect to `x0`.
+
+        Here `x0` is the initial state, interpreted as a probability
+        kernel p(x|x0) for each given time and initial state.
         When `discrete` is set to False (default), returns an array of
         probability density functions evaluated at `x` points.
         When `discrete` is set to True, returns an array of discrete
@@ -85,12 +85,12 @@ class BurstyBase:
         s = smooth
         # State when no burst occurred
         xt = np.exp(- d * t) * x0
-        # Array of translated states
+        # Array of translated states (use broadcasting)
         x = x - xt
         # Scaling factors
         e0 = np.exp(d * t)
         e1 = np.exp(k * t)
-        e1[t == 0] = 0 # Discarded
+        e1[t == 0] = 0  # Discarded
         r1 = b * (e0 - 1)
         r2 = (k/d) * (x >= 0) / (e1 - 1)
         # Probability that no burst occurred

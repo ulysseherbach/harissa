@@ -55,15 +55,18 @@ class BurstyPDMP:
 
 # Core functions for Numba acceleration
 
+
 @njit
-def kon(basal, inter, K0, K1, P):
-    """
-    Interaction function kon (off->on rate), given protein levels p.
-    """
-    Phi = np.exp(basal + P @ inter)
-    Kon = (K0 + K1*Phi)/(1 + Phi)
-    Kon[0] = 0 # Ignore stimulus
-    return Kon
+def kon(basal, inter, k0, k1, p):
+    """Interaction function kon (off->on rate) given protein levels."""
+    xmin = -709  # Minimal value for preventing np.exp overflow
+    x = basal + p @ inter
+    x[x < xmin] = xmin
+    phi = 1 / (1 + np.exp(-x))
+    kon = k0 + (k1 - k0) * phi
+    kon[0] = 0  # Ignore stimulus
+    return kon
+
 
 @njit
 def kon_bound(basal, inter, K0, K1, D0, D1, S1, M, P):
